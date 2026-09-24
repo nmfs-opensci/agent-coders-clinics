@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# LiteLLM gateway: never commit keys or generated key lists
+secrets/
+*-keys.csv
+*-keys.json

@@ -78,6 +78,16 @@ Findings in us-west-2:
   (3M) and Sonnet/Opus 4.5 also have quota. Proposed for the smoke test: Sonnet 4.6
   as the main alias, Haiku 4.5 as Claude Code's small model. Check the org
   account's quotas the same way before the workshop.
+- **Blocked: Bedrock refuses every call from this account** (2026-09-24). Tiny
+  `converse` calls to Sonnet 4.6, Haiku 4.5, and Amazon's own Nova Micro all
+  return `ValidationException: Error 002: Access to Bedrock models is not allowed
+  for this account`, repeated on retry. Because Amazon's own model is refused
+  too, this is an account-level restriction set by AWS, not an Anthropic form
+  or quota issue; the per-model "AUTHORIZED" status above does not reflect it.
+  The Free Tier API has no plan record for the account (older account, not on
+  the 2025 "free plan"). Fix is on AWS's side: check the payment method in
+  Billing, then open a Support case (Account and billing, free on Basic support)
+  quoting the error. Do not build infrastructure until a test call succeeds.
 - Nothing running: no EC2, EBS, Elastic IPs, RDS, CloudFormation stacks, or SSM
   parameters. Leftover IAM roles from Coiled and some Lambda tests — unrelated,
   leave alone.

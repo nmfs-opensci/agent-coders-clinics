@@ -88,6 +88,12 @@ Findings in us-west-2:
   the 2025 "free plan"). Fix is on AWS's side: check the payment method in
   Billing, then open a Support case (Account and billing, free on Basic support)
   quoting the error. Do not build infrastructure until a test call succeeds.
+  Also found: the Anthropic **First Time Use (use-case) form had not been
+  submitted** (`bedrock.get_use_case_for_model_access` → ResourceNotFound).
+  Anthropic calls need it regardless; submit it once per account in the Bedrock
+  console (model catalog → a Claude model). Marketplace Subscribe/Unsubscribe/
+  ViewSubscriptions are allowed via AdministratorAccess. Check the form the
+  same way in the org account.
 - Nothing running: no EC2, EBS, Elastic IPs, RDS, CloudFormation stacks, or SSM
   parameters. Leftover IAM roles from Coiled and some Lambda tests — unrelated,
   leave alone.

@@ -94,6 +94,18 @@ connect-ai-coding-tool, project-regions, activate-advanced-features), 2026-09-24
   smoke test.
 - Also: an org (ESIP/Openscapes) account is most likely a classic account, so a
   classic "Sign up for AWS (advanced)" account is the closer rehearsal.
+- **Eli had already activated advanced features** (irreversible) before seeing
+  this. So the new setup is an AWS Organization: a management account (admin
+  only), the project as a member account (build here), and a delegated-admin
+  account for Identity Center. CLI: `aws login --remote`, sign in as Eli (Builder
+  ID), choose the **project** session.
+- A region SCP **survives activation** (docs: scps-and-rcps-for-projects):
+  `RegionFloor` denies everything outside us-east-1, the project Region
+  (us-east-2), and us-west-2; `UsEast1Partitional`/`UsWest2Partitional` deny most
+  services in those two, but Bedrock invoke/list actions and Marketplace are
+  exempt everywhere. So: **build EC2 etc. in us-east-2**; Bedrock calls are
+  allowed. No SCP edit needed unless something else is blocked. Editing SCPs is
+  done from AWS Settings → Projects → Manage policies (management account).
 
 ## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 

@@ -121,6 +121,16 @@ connect-ai-coding-tool, project-regions, activate-advanced-features), 2026-09-24
   Contact AWS support for help / appeal" — wording of an automated AWS
   restriction or verification hold on the account, not a permissions error.
   Needs a Support case from the management account.
+- **Bedrock works from the management account** (2026-09-24, us-east-2): tiny
+  `converse` calls to `us.anthropic.claude-sonnet-4-6`,
+  `us.anthropic.claude-haiku-4-5-20251001-v1:0` and Nova Micro all returned "ok",
+  even though `get_use_case_for_model_access` says the Anthropic form is not on
+  file (so the form was not enforced here, at least for now). Management
+  account in us-east-2: default VPC with 3 public subnets, t4g.small in 3 AZs,
+  nothing running; Claude quotas same as the old account (Sonnet 4.6 6M TPM,
+  Haiku 4.5 5M; newest models 0). SCPs never apply to a management account, so
+  the region guardrail does not constrain it. Best practice is to keep workloads
+  out of the management account; building the smoke test there is Eli's call.
 
 ## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 

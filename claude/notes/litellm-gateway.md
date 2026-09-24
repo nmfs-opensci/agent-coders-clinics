@@ -57,7 +57,21 @@ dependencies. This work uses only:
   `litellm-poc` profile. That `…0392` account may be ESIP's — relevant if ESIP
   becomes the org target.
 
-## Personal account inspection (2026-09-24, `scripts/inspect_account.py`)
+## Switching to a new personal AWS account (2026-09-24)
+
+Eli **abandoned account `…8846`**: it was opened with a work email, and AWS
+kept Bedrock blocked account-wide (Error 002, section below) even after the
+billing fixes, with the Support case unanswered. The smoke test moves to a
+**new account opened with Eli's personal email**. It reuses the same profile
+name `litellm-poc` (`aws login` overwrites the old credentials), so `env.sh`
+and the scripts are unchanged. Steps for the new account: choose the Paid plan
+(the Free plan restricts some services), root MFA, credit card as the default
+payment method, an AWS Budget, an `eli-admin` IAM user as before, the Anthropic
+use-case form, then run `scripts/inspect_account.py` and a tiny test call
+**before** building anything. Whether to close `…8846` (which holds Coiled
+roles and a `jupyterhub` budget) is Eli's decision, not part of this work.
+
+## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 
 Account `…8846`, profile `litellm-poc` → IAM user `eli-admin`
 (AdministratorAccess, console password + MFA, no access keys; created for this

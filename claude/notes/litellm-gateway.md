@@ -66,10 +66,34 @@ billing fixes, with the Support case unanswered. The smoke test moves to a
 name `litellm-poc` (`aws login` overwrites the old credentials), so `env.sh`
 and the scripts are unchanged. Steps for the new account: choose the Paid plan
 (the Free plan restricts some services), root MFA, credit card as the default
-payment method, an AWS Budget, an `eli-admin` IAM user as before, the Anthropic
+payment method, an AWS Budget, an IAM user `e2holmes-admin` (same setup as
+`eli-admin` in the old account), the Anthropic
 use-case form, then run `scripts/inspect_account.py` and a tiny test call
 **before** building anything. Whether to close `…8846` (which holds Coiled
 roles and a `jupyterhub` budget) is Eli's decision, not part of this work.
+
+**The new account turned out to be AWS's "new experience"** ("Sign up for AWS
+(new)": Builder ID login, projects, spend limits; limited release). Facts from
+AWS docs (accounts/latest/reference/: sign-in-new, supported-services-sign-up-new,
+connect-ai-coding-tool, project-regions, activate-advanced-features), 2026-09-24:
+
+- No IAM users with console access; humans are the owner or invited team
+  members. CLI access is `aws login --profile <name>` as the owner, then pick the
+  project on AWS's "Choose AWS sessions" page (12-hour credentials, renewable
+  for 90 days). The `e2holmes-admin` IAM user is not needed.
+- Projects are pinned to one Region by contact country: US → **us-east-2 (Ohio)**,
+  not us-west-2. Bedrock read-only APIs work in other Regions; resources stay in
+  the project Region.
+- **Bedrock is supported but "Global cross-Region inference and Geographic
+  cross-Region inference are not supported."** Current Claude models on Bedrock
+  are offered only through inference profiles (`us.`/`global.`), so Claude may
+  be unusable here. Verify with a real call before deciding.
+- Leaving the new experience = "Activate advanced features": needs Paid plan,
+  **irreversible**, makes Eli the admin of an AWS Organization + IAM Identity
+  Center + a delegated-admin account, and removes spend limits. Heavy for a
+  smoke test.
+- Also: an org (ESIP/Openscapes) account is most likely a classic account, so a
+  classic "Sign up for AWS (advanced)" account is the closer rehearsal.
 
 ## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 

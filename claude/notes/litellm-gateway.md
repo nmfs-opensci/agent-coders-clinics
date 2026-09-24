@@ -106,6 +106,21 @@ connect-ai-coding-tool, project-regions, activate-advanced-features), 2026-09-24
   exempt everywhere. So: **build EC2 etc. in us-east-2**; Bedrock calls are
   allowed. No SCP edit needed unless something else is blocked. Editing SCPs is
   done from AWS Settings → Projects → Manage policies (management account).
+- Org "agent-coders" (read from the management account, 2026-09-24): accounts
+  `agent-coders Management Account` (…8125), `Greenfield Adventures` (…9870,
+  the project; build here), `agent-coders Identity Delegated Admin` (…3491). No
+  OUs. Root has SCPs `ManagedAccountSecurityControlPolicy`,
+  `AdvancedModeRegionRestrictionSecurityControlPolicy`, `FullAWSAccess` and RCP
+  `ManagedAccountResourceControlPolicy`. Identity Center (us-east-1) has no
+  permission sets; access goes through **Account access manager**
+  (boto3 `account-access`, us-east-1): Eli is entitled directly to
+  `role/managed/AccountFullAccessRole` in the management account, and via the
+  group `865526619870-AdministratorAccess` (Eli is its only member) to the same
+  role in Greenfield. So on paper Eli can reach Greenfield, but the console/`aws
+  login` refuses it with only "Something went wrong. Think we got it wrong?
+  Contact AWS support for help / appeal" — wording of an automated AWS
+  restriction or verification hold on the account, not a permissions error.
+  Needs a Support case from the management account.
 
 ## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 

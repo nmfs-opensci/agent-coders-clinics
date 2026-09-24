@@ -1,0 +1,45 @@
+# License
+
+This work was created by United States federal government employees as part of
+their official duties. As such, it is not subject to copyright protection in the
+United States and is considered "public domain" (see 17 U.S.C. §105).
+
+Additionally, we waive copyright and related rights in the work worldwide through
+the CC0 1.0 Universal public domain dedication.
+
+## CC0 1.0 Universal Summary
+
+This is a human-readable summary of the [Legal Code (read the full text)](https://creativecommons.org/publicdomain/zero/1.0/legalcode).
+
+### No Copyright
+
+The person who associated a work with this deed has dedicated the work to the public
+domain by waiving all of their rights to the work worldwide under copyright law,
+including all related and neighboring rights, to the extent allowed by law.
+
+You can copy, modify, distribute, and perform the work, even for commercial
+purposes, all without asking permission.
+
+### Other Information
+
+In no way are the patent or trademark rights of any person affected by CC0, nor are
+the rights that other persons may have in the work or in how the work is used, such
+as publicity or privacy rights.
+
+Unless expressly stated otherwise, the person who associated a work with this deed
+makes no warranties about the work, and disclaims liability for all uses of the
+work, to the fullest extent permitted by applicable law. When using or citing the
+work, you should not imply endorsement by the author or the affirmer.
+
+<!-- Ship as `LICENSE` (no extension). Use for NOAA documentation, tutorials,
+     teaching material and data. NOAA software goes under Apache-2.0 instead.
+
+     Adapted from eeholmes/Licenses/License.md. One sentence of that original was
+     dropped deliberately: it asserted that public domain software "cannot be
+     released under a copyright license (including typical open source software
+     licenses)." That predates the current NOAA policy, which applies Apache-2.0
+     to software for intellectual-property reasons, so repeating the claim here
+     would contradict the policy this template set follows.
+
+     CC0 badge:
+     [![License: CC0-1.0](https://img.shields.io/badge/License-CC0%%201.0-lightgrey.svg)](http://creativecommons.org/publicdomain/zero/1.0/) -->

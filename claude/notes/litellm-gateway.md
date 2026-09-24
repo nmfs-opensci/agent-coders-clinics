@@ -99,6 +99,10 @@ Findings in us-west-2:
   industryOption, otherIndustryOption, useCases). Read-back confirmed. Calls
   still returned Error 002 immediately afterwards; AWS allows ~15 min to take
   effect. If still blocked after that, the Support case is the next step.
+  Then confirmed account-wide: the Bedrock console playground gives the same
+  error, and so do us-east-1 calls (Nova Micro and Haiku 4.5). Not our IAM user,
+  code, Region, or the Anthropic form. Needs an AWS Support case (Account and
+  billing).
 - Nothing running: no EC2, EBS, Elastic IPs, RDS, CloudFormation stacks, or SSM
   parameters. Leftover IAM roles from Coiled and some Lambda tests — unrelated,
   leave alone.

@@ -57,6 +57,33 @@ dependencies. This work uses only:
   `litellm-poc` profile. That `…0392` account may be ESIP's — relevant if ESIP
   becomes the org target.
 
+## Personal account inspection (2026-09-24, `scripts/inspect_account.py`)
+
+Account `…8846`, profile `litellm-poc` → IAM user `eli-admin`
+(AdministratorAccess, console password + MFA, no access keys; created for this
+because `aws login` needs a console sign-in and root should not be used).
+Findings in us-west-2:
+
+- Not in an AWS Organization, so no organization policies restrict it. All
+  build permissions simulate as allowed.
+- **No default VPC.** The stack must create its own VPC, public subnet, internet
+  gateway and route table (all free).
+- Bedrock: every current Anthropic model reports `authorized=AUTHORIZED`,
+  `entitled=AVAILABLE`. `agreementAvailability` is `NOT_AVAILABLE`, meaning
+  unclear until a real call — a first tiny invocation is the true access test.
+- **Tokens-per-minute quotas are 0** for the newest models (Sonnet 5, Opus 5,
+  Opus 5.5, Opus 4.7/4.8, Fable 5/5.1) — unusable without a quota increase.
+  Usable now: **Sonnet 4.6** (`us.anthropic.claude-sonnet-4-6`, 6M TPM) and
+  **Haiku 4.5** (`us.anthropic.claude-haiku-4-5-20251001-v1:0`, 5M TPM); Opus 4.6
+  (3M) and Sonnet/Opus 4.5 also have quota. Proposed for the smoke test: Sonnet 4.6
+  as the main alias, Haiku 4.5 as Claude Code's small model. Check the org
+  account's quotas the same way before the workshop.
+- Nothing running: no EC2, EBS, Elastic IPs, RDS, CloudFormation stacks, or SSM
+  parameters. Leftover IAM roles from Coiled and some Lambda tests — unrelated,
+  leave alone.
+- Existing AWS Budget `jupyterhub`: $40/month account-wide, alert at 50% actual.
+  Month-to-date spend $0. The smoke test fits inside it.
+
 ## Gotchas to remember
 
 - Claude Code → gateway: `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN` (LiteLLM key),
@@ -74,10 +101,8 @@ dependencies. This work uses only:
 
 - [x] 0. Pared-down environment: `.venv`, `requirements.txt`, `env.sh`, AWS CLI v2,
       session-manager-plugin.
-- [ ] 1. `aws login --profile litellm-poc`; read-only inspection of the account:
-      identity and permissions, Bedrock Claude models and inference profiles in
-      us-west-2, model access, quotas, default VPC, existing resources. Report
-      before creating anything.
+- [x] 1. `aws login --profile litellm-poc`; read-only inspection (findings above).
+      Rerun `python scripts/inspect_account.py` against the org account later.
 - [ ] 2. Final proposal with exact resources and costs — **pause for approval**.
 - [ ] 3. Build: CloudFormation template + compose file, secrets in Parameter Store.
 - [ ] 4. One model under a simple LiteLLM alias (verified IDs).

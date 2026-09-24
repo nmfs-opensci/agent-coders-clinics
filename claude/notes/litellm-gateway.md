@@ -94,6 +94,11 @@ Findings in us-west-2:
   console (model catalog → a Claude model). Marketplace Subscribe/Unsubscribe/
   ViewSubscriptions are allowed via AdministratorAccess. Check the form the
   same way in the org account.
+  **Submitted 2026-09-24** via `put_use_case_for_model_access` (JSON form:
+  companyName, companyWebsite, intendedUsers "0"=internal/"1"=external/"2"=both,
+  industryOption, otherIndustryOption, useCases). Read-back confirmed. Calls
+  still returned Error 002 immediately afterwards; AWS allows ~15 min to take
+  effect. If still blocked after that, the Support case is the next step.
 - Nothing running: no EC2, EBS, Elastic IPs, RDS, CloudFormation stacks, or SSM
   parameters. Leftover IAM roles from Coiled and some Lambda tests — unrelated,
   leave alone.

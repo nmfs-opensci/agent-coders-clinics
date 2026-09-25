@@ -45,6 +45,45 @@ apart and there is no per-person spending cap.
   will not work for them; they need an HTTPS endpoint — Caddy on the instance
   (needs a domain name) or an ALB + ACM certificate (~$16/month more). Eli to decide.
 
+## Phase 2 proposal (2026-09-25, awaiting Eli's approval)
+
+Account `litellm-smoke-test`, us-east-2, one CloudFormation stack `litellm-smoke`.
+
+- Network: own VPC + one public subnet + internet gateway + route table (free;
+  portable to accounts without a default VPC). Security group with **no
+  inbound rules**; outbound HTTPS only.
+- EC2 `t4g.small` (ARM), Amazon Linux 2023, 20 GB gp3 encrypted, IMDSv2
+  required, auto-assigned public IPv4 (needed to reach Bedrock/SSM/image
+  registry without a NAT gateway).
+- Instance role: `AmazonSSMManagedInstanceCore` (Session Manager) + inline
+  `bedrock:InvokeModel`/`InvokeModelWithResponseStream` on the two `us.`
+  inference profiles and their foundation models in us-east-1/us-east-2/us-west-2,
+  `ssm:GetParameter` on `/litellm-smoke/*`.
+- Docker Compose: LiteLLM (official image, pinned to the current non-prerelease
+  version at build time — tags are now plain `v1.10x.y`, the `-stable` suffix
+  stopped in May 2026) + Postgres 16 on the instance disk. LiteLLM listens on
+  127.0.0.1:4000 only; reached by SSM port forwarding from the hub.
+- Secrets: master key, DB password, `LITELLM_SALT_KEY` as SSM SecureString,
+  created by a script with random values, never printed (CloudFormation cannot
+  create SecureString parameters). Scripts that need the master key read it
+  from SSM themselves.
+- Models: alias `sonnet` → `bedrock/us.anthropic.claude-sonnet-4-6`, alias
+  `haiku` → `bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0`.
+- AWS Budget in the new account, $10/month, email alert to Eli.
+- Test key: $2 budget, 3-day expiry.
+- Costs checked with the AWS Pricing API: t4g.small $0.0168/h, gp3 $0.08/GB-month,
+  public IPv4 $0.005/h → ≈ $0.57/day running, ≈ $17.50/month if left on,
+  ≈ $1.60/month stopped (disk only; auto-assigned IPv4 is released on stop),
+  $0 after teardown. Bedrock `us.` (geographic cross-Region) prices are ~10%
+  above `global.`: Sonnet 4.6 $3.30/M input, $16.50/M output, $0.33/M cache
+  read; Haiku 4.5 about $1.10/$5.50. A short Claude Code test ≈ $0.20–$1.
+- Planned files: `infra/litellm-smoke.yaml`, compose + LiteLLM config,
+  `scripts/make_secrets.py`, deploy/stop/teardown scripts, `scripts/keys.py`
+  (create/list/block/delete keys; key values only to git-ignored `secrets/`),
+  and a launcher that opens the tunnel and starts Claude Code with the gateway
+  variables, clearing `CLAUDE_CODE_USE_BEDROCK`, `ANTHROPIC_API_KEY`,
+  `ANTHROPIC_BASE_URL` inherited from Eli's Claude launchers.
+
 ## Environment (pared down on purpose)
 
 The hub's default Python env is a large geospatial image, which hides missing

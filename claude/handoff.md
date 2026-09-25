@@ -21,7 +21,11 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
 - **AWS lessons** (account kinds, logins, member-account roles, per-account
   Bedrock checklist): `claude/notes/aws-setup-lessons.md`.
 - Reusable-skill proposal from this work: nmfs-opensci/agent-skills#22.
-- Eli said on 2026-09-25 that the next task is **issue #5**.
+- **Issue #5 in progress on branch `issue-5-other-tools`** (pushed, no PR yet;
+  the rest of #5 goes on the same branch). Done: caching fix for Claude via
+  OpenAI-style tools, live on the gateway. Left: OpenCode, Aider, quickstart
+  restructure. The branch's `claude/notes/other-coding-tools.md` is current;
+  the copy on `main` predates the caching fix.
 
 ## Working principles
 

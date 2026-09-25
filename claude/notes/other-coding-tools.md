@@ -4,7 +4,7 @@ The task list, Copilot CLI setup, and the caching cost table are in issue #5
 itself; do not duplicate them here. This note records progress and anything
 learned that the issue does not say.
 
-## Status (2026-09-25)
+## Status (2026-09-25): all tasks done, merged in PR #7; issue still open
 
 - The gateway answers `/v1/messages`, `/v1/chat/completions` and
   `/v1/responses`.
@@ -23,14 +23,17 @@ learned that the issue does not say.
   removed without being run: Claude
   Code's auto-mode classifier blocked a run with `--yes-always`. If revisited:
   `--model openai/<served name>` with `OPENAI_API_BASE` and `OPENAI_API_KEY`.
-- **Quickstart restructure: drafted (2026-09-25)**, after merging Rich
+- **Quickstart restructure: done (2026-09-25)**, after merging Rich
   Signell's PR #6 (set the key first so the rest pastes unedited). The page
   now sets `GATEWAY_KEY` and `GATEWAY_URL` once; every tool section derives
   its own variables from them. Each tool's block was run as written in a
   clean `HOME` and worked. Copilot CLI needs **no GitHub login** with the
   `COPILOT_PROVIDER_*` variables (checked with an empty home, no token).
   OpenCode config sets `small_model` too, so it never falls back to
-  OpenCode's own hosted models.
+  OpenCode's own hosted models. Eli rearranged the basics section after
+  that. The model table's costs are input-token price relative to Haiku
+  (from the config's prices), with a note that cached Haiku can be as cheap
+  per request as the open models.
 - **Caching fix: done (2026-09-25).** `cache_control_injection_points`
   (system message + message index -1) on the three Claude models, in
   `infra/litellm-smoke.yaml` and applied to the running instance over SSM

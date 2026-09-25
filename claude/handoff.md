@@ -9,23 +9,22 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
 
 ## Working on
 
-- **LiteLLM gateway for Claude Code on Bedrock** — prototype done (issue #1
+- **LiteLLM gateway for coding tools on Bedrock** — prototype done (issue #1
   closed), running at `https://18.227.15.211.sslip.io` with per-person keys and
-  shared with colleagues. Follow-up is **issue #4**: real-work cost test,
-  workshop runbook, colleague feedback. **Issue #5**: other coding tools
-  (Copilot CLI tested and working; OpenCode, Aider to do), a per-tool
-  participant quickstart, and a caching fix for Claude via OpenAI-style tools.
-  What is running, keys, models, costs: `claude/notes/litellm-gateway.md`.
-  Issue #5 progress: `claude/notes/other-coding-tools.md`. Build history and
-  superseded decisions: `claude/notes/litellm-gateway-history.md` (on demand).
+  shared with colleagues. What is running, keys, models, costs:
+  `claude/notes/litellm-gateway.md`. Build history and superseded decisions:
+  `claude/notes/litellm-gateway-history.md` (on demand).
+- **Issue #5 work merged (PR #7, 2026-09-25)**: caching for Claude via
+  OpenAI-style tools (live), and `docs/participant-quickstart.md` rewritten for
+  **Claude Code, OpenCode and Copilot CLI** (Aider dropped by Eli). Rich
+  Signell's PR #6 (set the key first) merged into it; Eli then rearranged the
+  basics section by hand. Issue #5 is still open: every task in it is done,
+  so it can be closed when Eli says. Details: `claude/notes/other-coding-tools.md`.
+- **Next open thread: issue #4**: real-work cost test, workshop runbook,
+  colleague feedback.
 - **AWS lessons** (account kinds, logins, member-account roles, per-account
   Bedrock checklist): `claude/notes/aws-setup-lessons.md`.
 - Reusable-skill proposal from this work: nmfs-opensci/agent-skills#22.
-- **Issue #5 in progress on branch `issue-5-other-tools`** (pushed, no PR yet;
-  the rest of #5 goes on the same branch). Done: caching fix for Claude via
-  OpenAI-style tools, live on the gateway. Left: OpenCode, Aider, quickstart
-  restructure. The branch's `claude/notes/other-coding-tools.md` is current;
-  the copy on `main` predates the caching fix.
 
 ## Working principles
 

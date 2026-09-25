@@ -105,7 +105,10 @@ Account `litellm-smoke-test`, us-east-2, one CloudFormation stack `litellm-smoke
   including Amazon Nova** (`ValidationException: Operation not allowed`), and
   does not see the form — so it is the new account's own verification hold
   (created 00:06 UTC; AWS said "normally takes less than 2 hours"), not the
-  form. Retest after ~02:10 UTC before changing the design.
+  form. Retested every 5 min until 02:28 UTC (2 h 22 min after creation):
+  still `Operation not allowed` for Nova, Sonnet and Haiku. Treat the member
+  account as held by AWS, like Greenfield; the management account is the only
+  place Bedrock works. Design decision pending with Eli.
 - **Scope change from Eli:** one test key now. Two keys (two JupyterHubs as two
   pretend users) wait for Phase 4 with an HTTPS endpoint, because each hub
   would otherwise need its own AWS login to run the tunnel.

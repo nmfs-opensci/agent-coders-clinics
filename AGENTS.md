@@ -20,8 +20,11 @@ CLI v2 and `session-manager-plugin` in `~/.local/bin`.
 
 Run `source env.sh` before every AWS command. It removes the JupyterHub's own
 AWS role, which the AWS tools would otherwise use first, and selects the
-`litellm-poc` profile in `us-west-2`. Each agent shell command starts fresh, so
-prefix commands: `source env.sh && aws sts get-caller-identity`.
+`litellm-smoke` profile in `us-east-2`: a role in the `litellm-smoke-test`
+member account, assumed with the `litellm-poc` login to the organization's
+management account. Each agent shell command starts fresh, so prefix commands:
+`source env.sh && aws sts get-caller-identity`. If credentials have expired, the
+user renews them with `aws login --remote --profile litellm-poc`.
 
 Never print or commit AWS credentials, the LiteLLM master key, or participant
 keys. Ask before creating AWS resources that cost money while idle.

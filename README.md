@@ -26,13 +26,25 @@ Then build the Python environment and sign in to AWS:
 ```bash
 /srv/conda/bin/python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-source env.sh                          # run in every new terminal
-aws login --profile litellm-poc        # short-lived credentials, opens a browser
+source env.sh                               # run in every new terminal
+aws login --remote --profile litellm-poc    # short-lived credentials; sign in to the org's management account
 ```
 
-`env.sh` clears the JupyterHub's own AWS role so that commands use your
-`litellm-poc` profile. Set `LITELLM_AWS_PROFILE` or `LITELLM_AWS_REGION`
-before sourcing it to use a different profile or Region (default `us-west-2`).
+The gateway is built in a separate member account, `litellm-smoke-test`,
+created from the organization's management account. The `litellm-smoke`
+profile reaches it by assuming that account's `OrganizationAccountAccessRole`
+with the `litellm-poc` login. Set it up once (replace the account ID):
+
+```bash
+aws configure set role_arn arn:aws:iam::<ACCOUNT_ID>:role/OrganizationAccountAccessRole --profile litellm-smoke
+aws configure set source_profile litellm-poc --profile litellm-smoke
+aws configure set region us-east-2 --profile litellm-smoke
+```
+
+`env.sh` clears the JupyterHub's own AWS role and selects the `litellm-smoke`
+profile in `us-east-2`. Set `LITELLM_AWS_PROFILE` or `LITELLM_AWS_REGION`
+before sourcing it to use a different profile or Region. Always name the
+profile in `aws login`, since the default profile is the role, not the login.
 
 ## Reuse and citation
 

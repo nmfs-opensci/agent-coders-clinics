@@ -15,11 +15,18 @@ apart and there is no per-person spending cap.
 - **Smoke test in Eli's personal AWS account, then hand over to an org account**
   (not NOAA; likely ESIP, possibly Openscapes). So nothing may be tied to one
   account: account, Region, and model are parameters; the AWS profile name is a
-  setting (`LITELLM_AWS_PROFILE`, default `litellm-poc`).
-- **Region us-west-2.** One of the two Regions with the fullest Claude-on-Bedrock
-  coverage; `us.` inference profiles route across US Regions anyway; latency is
-  dominated by the model. Change it with `LITELLM_AWS_REGION` if the org already
-  works elsewhere.
+  setting (`LITELLM_AWS_PROFILE`, default `litellm-smoke`).
+- **Where it is built (current, 2026-09-25): member account `litellm-smoke-test`
+  (…2338, email e2holmes+litellm@gmail.com)**, created with
+  `organizations.create_account` from Eli's management account (see "Switching"
+  below for how we got here). Created this way so it has
+  `OrganizationAccountAccessRole`: profile `litellm-smoke` (in `~/.aws/config`,
+  not the repo) assumes that role with `source_profile = litellm-poc`, and
+  `env.sh` selects it. `aws login --remote --profile litellm-poc` signs in to
+  the management account (Builder ID, choose "Management Account").
+- **Region us-east-2.** Originally us-west-2; changed because the org's surviving
+  region SCP blocks most services outside us-east-2 (Bedrock calls exempt).
+  `us.` inference profiles route across US Regions anyway.
 - **Credentials via `aws login`** (AWS CLI v2 ≥ 2.32), short-lived, into the
   profile `litellm-poc`. No long-lived access keys anywhere.
 - **Claude Code for the smoke test runs on the JupyterHub**, so the SSM tunnel
@@ -138,6 +145,12 @@ connect-ai-coding-tool, project-regions, activate-advanced-features), 2026-09-24
   accounts share the root email e2holmes@gmail.com**, so root sign-in with it
   lands in the management account, not Greenfield. Setting the management root
   password invalidates existing `aws login` sessions (log in again).
+- **Resolution: created member account `litellm-smoke-test`** (2026-09-25) from
+  the management account. Assuming its `OrganizationAccountAccessRole` works.
+  First test: Sonnet 4.6 answered "ok"; Haiku 4.5 returned "Your account is
+  currently being verified… normally takes less than 2 hours" (routine hold on
+  a new account). Retest Haiku before building. Greenfield Adventures stays
+  unused; a Support case about it is optional.
 
 ## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 
@@ -209,6 +222,8 @@ Findings in us-west-2:
 - [x] 0. Pared-down environment: `.venv`, `requirements.txt`, `env.sh`, AWS CLI v2,
       session-manager-plugin.
 - [x] 1. `aws login --profile litellm-poc`; read-only inspection (findings above).
+      Redone for the new setup: account `litellm-smoke-test`, us-east-2 (pending
+      Haiku verification hold).
       Rerun `python scripts/inspect_account.py` against the org account later.
 - [ ] 2. Final proposal with exact resources and costs — **pause for approval**.
 - [ ] 3. Build: CloudFormation template + compose file, secrets in Parameter Store.

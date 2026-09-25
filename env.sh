@@ -7,8 +7,11 @@
 unset AWS_ROLE_ARN AWS_WEB_IDENTITY_TOKEN_FILE AWS_ROLE_SESSION_NAME \
       AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 
-export AWS_PROFILE="${LITELLM_AWS_PROFILE:-litellm-poc}"
-export AWS_REGION="${LITELLM_AWS_REGION:-us-west-2}"
+# litellm-smoke is the account the gateway is built in. It is reached by
+# assuming a role from the litellm-poc login (see README), so `aws login`
+# always targets litellm-poc.
+export AWS_PROFILE="${LITELLM_AWS_PROFILE:-litellm-smoke}"
+export AWS_REGION="${LITELLM_AWS_REGION:-us-east-2}"
 export AWS_DEFAULT_REGION="$AWS_REGION"
 
 # AWS CLI v2 and session-manager-plugin are installed in ~/.local/bin (see README).

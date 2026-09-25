@@ -7,22 +7,6 @@ Description: >
   scripts/make_secrets.py before this stack is deployed.
 
 Parameters:
-  SonnetProfileId:
-    Type: String
-    Default: us.anthropic.claude-sonnet-4-6
-    Description: Bedrock inference profile behind SonnetModelName.
-  HaikuProfileId:
-    Type: String
-    Default: us.anthropic.claude-haiku-4-5-20251001-v1:0
-    Description: Bedrock inference profile behind HaikuModelName.
-  # Model names clients ask for. Anthropic API IDs, so Claude Code recognizes
-  # them and shows the real name, context size and price (not "Custom model").
-  SonnetModelName:
-    Type: String
-    Default: claude-sonnet-4-6
-  HaikuModelName:
-    Type: String
-    Default: claude-haiku-4-5-20251001
   LiteLLMImage:
     Type: String
     # v1.102.1, pinned by digest (multi-arch index; includes arm64).
@@ -111,17 +95,29 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
-              # Cross-Region inference needs the profile and the underlying
-              # model in every Region the profile routes to.
-              - Sid: InvokeTwoProfiles
+              # Exactly the models in config.yaml below; keep the two lists in step.
+              # Claude goes through us. inference profiles, which need the profile
+              # and the underlying model in every Region the profile routes to.
+              - Sid: InvokeServedModels
                 Effect: Allow
                 Action:
                   - bedrock:InvokeModel
                   - bedrock:InvokeModelWithResponseStream
                 Resource:
-                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${SonnetProfileId}
-                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${HaikuProfileId}
-                  - arn:aws:bedrock:*::foundation-model/anthropic.*
+                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-sonnet-4-6
+                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-haiku-4-5-20251001-v1:0
+                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-opus-4-6-v1
+                  - arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-6
+                  - arn:aws:bedrock:*::foundation-model/anthropic.claude-haiku-4-5-20251001-v1:0
+                  - arn:aws:bedrock:*::foundation-model/anthropic.claude-opus-4-6-v1
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/qwen.qwen3-coder-480b-a35b-v1:0
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/qwen.qwen3-coder-30b-a3b-v1:0
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/mistral.devstral-2-123b
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/moonshotai.kimi-k2.5
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/zai.glm-5
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/minimax.minimax-m2.5
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/deepseek.v3.2
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/openai.gpt-oss-120b-1:0
               - Sid: ReadOwnSecrets
                 Effect: Allow
                 Action: ssm:GetParameter
@@ -190,14 +186,72 @@ Resources:
 
           cat > config.yaml <<'CONFIG'
           model_list:
-            - model_name: ${SonnetModelName}
+            # Coding models only. Claude models are named by their Anthropic API
+            # IDs so Claude Code recognizes them (name, context, price). Other
+            # models use the Converse API with prices set here: us-east-2 on-demand
+            # rates from the AWS Pricing API (2026-09-25), because LiteLLM's own
+            # price list lacks some of them for this Region and a missing price
+            # would record $0 spend and make budgets useless.
+            - model_name: claude-sonnet-4-6
               litellm_params:
-                model: bedrock/${SonnetProfileId}
+                model: bedrock/us.anthropic.claude-sonnet-4-6
                 aws_region_name: ${AWS::Region}
-            - model_name: ${HaikuModelName}
+            - model_name: claude-haiku-4-5-20251001
               litellm_params:
-                model: bedrock/${HaikuProfileId}
+                model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
                 aws_region_name: ${AWS::Region}
+            - model_name: claude-opus-4-6
+              litellm_params:
+                model: bedrock/us.anthropic.claude-opus-4-6-v1
+                aws_region_name: ${AWS::Region}
+            - model_name: qwen3-coder-480b
+              litellm_params:
+                model: bedrock/converse/qwen.qwen3-coder-480b-a35b-v1:0
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.00000045
+                output_cost_per_token: 0.0000018
+            - model_name: qwen3-coder-30b
+              litellm_params:
+                model: bedrock/converse/qwen.qwen3-coder-30b-a3b-v1:0
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.00000015
+                output_cost_per_token: 0.0000006
+            - model_name: devstral-2
+              litellm_params:
+                model: bedrock/converse/mistral.devstral-2-123b
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.0000004
+                output_cost_per_token: 0.000002
+            - model_name: kimi-k2.5
+              litellm_params:
+                model: bedrock/converse/moonshotai.kimi-k2.5
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.0000006
+                output_cost_per_token: 0.000003
+            - model_name: glm-5
+              litellm_params:
+                model: bedrock/converse/zai.glm-5
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.000001
+                output_cost_per_token: 0.0000032
+            - model_name: minimax-m2.5
+              litellm_params:
+                model: bedrock/converse/minimax.minimax-m2.5
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.0000003
+                output_cost_per_token: 0.0000012
+            - model_name: deepseek-v3.2
+              litellm_params:
+                model: bedrock/converse/deepseek.v3.2
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.00000062
+                output_cost_per_token: 0.00000185
+            - model_name: gpt-oss-120b
+              litellm_params:
+                model: bedrock/converse/openai.gpt-oss-120b-1:0
+                aws_region_name: ${AWS::Region}
+                input_cost_per_token: 0.00000015
+                output_cost_per_token: 0.0000006
           general_settings:
             master_key: os.environ/LITELLM_MASTER_KEY
             database_url: os.environ/DATABASE_URL

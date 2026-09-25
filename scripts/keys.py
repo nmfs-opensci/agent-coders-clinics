@@ -3,6 +3,8 @@
 Run after `source env.sh`, with scripts/tunnel.sh running in another terminal:
 
   python scripts/keys.py create alice --budget 2 --days 3
+  python scripts/keys.py create bob --models claude-sonnet-4-6 qwen3-coder-480b
+  python scripts/keys.py models           # what the gateway serves
   python scripts/keys.py list
   python scripts/keys.py block alice      # or: unblock alice
   python scripts/keys.py delete alice
@@ -22,8 +24,6 @@ import boto3
 import requests
 
 SECRETS = pathlib.Path(__file__).resolve().parent.parent / "secrets"
-# Must match SonnetModelName / HaikuModelName in infra/litellm-smoke.yaml.
-MODELS = ["claude-sonnet-4-6", "claude-haiku-4-5-20251001"]
 
 
 def master_key(prefix):
@@ -62,15 +62,17 @@ def create(gw, args):
         "key_alias": args.user,
         "max_budget": args.budget,
         "duration": f"{args.days}d",
-        "models": MODELS,
         "metadata": {"purpose": "litellm smoke test"},
     }
+    if args.models:
+        body["models"] = args.models  # otherwise the key may use every model served
     key = gw.call("POST", "/key/generate", json=body)["key"]
     SECRETS.mkdir(exist_ok=True)
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "w") as f:
         f.write(key + "\n")
-    print(f"Created key for {args.user}: budget ${args.budget}, expires in {args.days} days.")
+    print(f"Created key for {args.user}: budget ${args.budget}, expires in {args.days} days, "
+          f"models: {', '.join(args.models) if args.models else 'all'}.")
     print(f"Saved to {path} (not printed).")
 
 
@@ -84,6 +86,11 @@ def show(gw, args):
             f"${k.get('max_budget')}  expires {k.get('expires')}  "
             f"{'BLOCKED' if k.get('blocked') else 'active'}"
         )
+
+
+def models(gw, args):
+    for m in gw.call("GET", "/v1/models")["data"]:
+        print(m["id"])
 
 
 def block(gw, args, blocked=True):
@@ -106,7 +113,9 @@ def main():
     c.add_argument("user")
     c.add_argument("--budget", type=float, default=2.0, help="USD (default 2)")
     c.add_argument("--days", type=int, default=3, help="expiry in days (default 3)")
+    c.add_argument("--models", nargs="+", help="limit the key to these models (default: all)")
     sub.add_parser("list")
+    sub.add_parser("models")
     for name in ("block", "unblock", "delete"):
         sub.add_parser(name).add_argument("user")
     args = ap.parse_args()
@@ -115,6 +124,7 @@ def main():
     {
         "create": create,
         "list": show,
+        "models": models,
         "block": block,
         "unblock": lambda g, a: block(g, a, blocked=False),
         "delete": delete,

@@ -363,3 +363,24 @@ Findings in us-west-2:
   the running instance by editing `/opt/litellm/config.yaml` over SSM and
   restarting the container (user data only runs on first boot, so a stack
   update would not rewrite it), and `eli-test` updated via `/key/update`.
+
+### 2026-09-25: Coding models beyond Claude (Eli's direction)
+
+- Eli: serve **coding-tuned models**, not only Claude; the Admin UI is for
+  watching usage and cost, **not** for managing models (no `STORE_MODEL_IN_DB`).
+  UI access waits for phase 4 HTTPS.
+- LiteLLM does not discover Bedrock models; the UI's model dropdown is LiteLLM's
+  built-in catalog. What is served is `model_list` in the config (in the
+  template's user data), and the instance role allows exactly those models.
+- Served (11): `claude-sonnet-4-6`, `claude-haiku-4-5-20251001`,
+  `claude-opus-4-6` (via `us.` profiles) and, via `bedrock/converse/…`,
+  `qwen3-coder-480b`, `qwen3-coder-30b`, `devstral-2`, `kimi-k2.5`, `glm-5`,
+  `minimax-m2.5`, `deepseek-v3.2`, `gpt-oss-120b`. Each passed a tool-use call
+  directly and through the gateway's `/v1/messages`. Sonnet 5: not available to
+  the account.
+- Non-Claude prices are set explicitly in the config (us-east-2 on-demand, AWS
+  Pricing API): LiteLLM had Kimi/MiniMax/DeepSeek only under ap-northeast-1 at
+  different rates. Spend logs confirmed correct per-model costs.
+- `keys.py create` now gives access to all served models unless `--models` is
+  given; `keys.py models` lists them. Stack rebuilt (instance
+  `i-081f81bfdd80e4e3d`); new `eli-test` key, $2, expires 2026-09-28.

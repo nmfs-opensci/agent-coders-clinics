@@ -26,6 +26,14 @@ also clear those settings in this terminal so they do not override the gateway:
 unset CLAUDE_CODE_USE_BEDROCK ANTHROPIC_API_KEY
 ```
 
+### Other models
+
+The gateway serves Claude Sonnet 4.6, Haiku 4.5 and Opus 4.6, plus open coding
+models: `qwen3-coder-480b`, `qwen3-coder-30b`, `devstral-2`, `kimi-k2.5`,
+`glm-5`, `minimax-m2.5`, `deepseek-v3.2`, `gpt-oss-120b`. To try one, set
+`ANTHROPIC_MODEL` to its name (or use `/model` inside Claude Code). Claude Code
+is built for Claude; other models work, but less reliably with its tools.
+
 ## 2. Start Claude Code
 
 ```bash

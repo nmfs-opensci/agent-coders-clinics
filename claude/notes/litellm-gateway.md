@@ -317,3 +317,10 @@ Findings in us-west-2:
   period; the FTU form is not yet submitted there).
 - `litellm-smoke-test` still refuses every model, GPT-OSS included, so its block
   is account-level (likely the same missing payment method), not the Anthropic form.
+- **Gateway moved to Greenfield (2026-09-25).** The FTU form was already on file
+  there (org-wide from the management account). Stack `litellm-smoke` and its
+  `/litellm-smoke/*` parameters were deleted from `litellm-smoke-test`, then
+  redeployed in Greenfield: instance `i-06e6ac5eebcc3bb7a`, readiness
+  `healthy`, `db connected`. `env.sh`, README and AGENTS.md now default to the
+  `greenfield` profile. `litellm-smoke-test` holds nothing billable; closing it
+  is Eli's call. Next: phase 5 smoke test (tunnel, one key, Claude Code).

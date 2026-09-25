@@ -20,7 +20,7 @@ CLI v2 and `session-manager-plugin` in `~/.local/bin`.
 
 Run `source env.sh` before every AWS command. It removes the JupyterHub's own
 AWS role, which the AWS tools would otherwise use first, and selects the
-`litellm-smoke` profile in `us-east-2`: a role in the `litellm-smoke-test`
+`greenfield` profile in `us-east-2`: a role in the `Greenfield Adventures`
 member account, assumed with the `litellm-poc` login to the organization's
 management account. Each agent shell command starts fresh, so prefix commands:
 `source env.sh && aws sts get-caller-identity`. If credentials have expired, the

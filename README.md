@@ -30,18 +30,22 @@ source env.sh                               # run in every new terminal
 aws login --remote --profile litellm-poc    # short-lived credentials; sign in to the org's management account
 ```
 
-The gateway is built in a separate member account, `litellm-smoke-test`,
-created from the organization's management account. The `litellm-smoke`
-profile reaches it by assuming that account's `OrganizationAccountAccessRole`
-with the `litellm-poc` login. Set it up once (replace the account ID):
+The gateway is built in the member account `Greenfield Adventures`, reached
+from the management-account login through `OrganizationAccountAccessRole`.
+(AWS created Greenfield at sign-up without that role, so it was added by hand in
+Greenfield's IAM console: trusted account = the management account, policy
+AdministratorAccess; `scripts/add-org-access-role.sh` does the same from
+CloudShell.) One-time setup of the `greenfield` profile:
 
 ```bash
-aws configure set role_arn arn:aws:iam::<ACCOUNT_ID>:role/OrganizationAccountAccessRole --profile litellm-smoke
-aws configure set source_profile litellm-poc --profile litellm-smoke
-aws configure set region us-east-2 --profile litellm-smoke
+aws configure set role_arn arn:aws:iam::<ACCOUNT_ID>:role/OrganizationAccountAccessRole --profile greenfield
+aws configure set source_profile litellm-poc --profile greenfield
+aws configure set region us-east-2 --profile greenfield
 ```
 
-`env.sh` clears the JupyterHub's own AWS role and selects the `litellm-smoke`
+Each account needs its own payment method before Bedrock will run any model.
+
+`env.sh` clears the JupyterHub's own AWS role and selects the `greenfield`
 profile in `us-east-2`. Set `LITELLM_AWS_PROFILE` or `LITELLM_AWS_REGION`
 before sourcing it to use a different profile or Region. Always name the
 profile in `aws login`, since the default profile is the role, not the login.

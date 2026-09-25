@@ -99,6 +99,13 @@ Account `litellm-smoke-test`, us-east-2, one CloudFormation stack `litellm-smoke
   **management account** (it is inherited by the organization), then make one
   admin-role call per model so the Marketplace subscription completes — the
   instance role has no `aws-marketplace:*` permissions and cannot trigger it.
+- **Form submitted in the management account** (2026-09-25 00:30 UTC, same
+  wording as before; read-back confirmed). Management account then works for
+  Sonnet 4.6 and Nova. `litellm-smoke-test` still refuses **everything,
+  including Amazon Nova** (`ValidationException: Operation not allowed`), and
+  does not see the form — so it is the new account's own verification hold
+  (created 00:06 UTC; AWS said "normally takes less than 2 hours"), not the
+  form. Retest after ~02:10 UTC before changing the design.
 - **Scope change from Eli:** one test key now. Two keys (two JupyterHubs as two
   pretend users) wait for Phase 4 with an HTTPS endpoint, because each hub
   would otherwise need its own AWS login to run the tunnel.

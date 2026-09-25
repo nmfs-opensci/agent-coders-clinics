@@ -27,7 +27,7 @@ In a terminal, run these lines, putting your key in the second one:
 ```bash
 export ANTHROPIC_BASE_URL=https://18.227.15.211.sslip.io
 export ANTHROPIC_AUTH_TOKEN=sk-your-key-here
-export ANTHROPIC_MODEL=claude-sonnet-4-6
+export ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
 export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
 export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
@@ -55,9 +55,10 @@ work as usual.
 
 ## Choosing a model
 
-The default is **Claude Sonnet 4.6**. In Claude Code, `/model` switches between
-Sonnet, **Opus 4.6** (strongest, about 1.7× the cost) and **Haiku 4.5**
-(cheapest Claude).
+The default is **Claude Haiku 4.5**: fast, capable for most coding tasks, and
+about a third of the cost of Sonnet, so your budget lasts much longer. For
+harder problems, `/model` switches to **Sonnet 4.6** (about 3× Haiku) or
+**Opus 4.6** (strongest, about 5× Haiku), and back again.
 
 The gateway also serves open coding models. Switch with `/model <name>`, e.g.
 `/model qwen3-coder-480b`:
@@ -82,6 +83,20 @@ Every request resends Claude Code's instructions and your conversation, about
 30,000–60,000 tokens. On Sonnet that is roughly 2–3 cents per request after the
 first, and one prompt can make many requests. `/usage` shows what this session
 has used.
+
+## How much budget is left
+
+Run this in the same terminal (it uses the settings from step 2):
+
+```bash
+curl -s $ANTHROPIC_BASE_URL/key/info \
+  -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" |
+  python3 -c "import sys, json; i = json.load(sys.stdin)['info']
+print(f\"Spent \${i['spend']:.2f} of \${i['max_budget']:.2f}; expires {i['expires'][:10]}\")"
+```
+
+Spending shows up about a minute after each request. `/usage` inside Claude
+Code shows only the current session.
 
 ## What you may see
 

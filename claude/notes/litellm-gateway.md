@@ -406,3 +406,20 @@ Findings in us-west-2:
   stop/teardown), participant docs point at the HTTPS URL.
 - Next: Eli sends a key to the ESIP colleague. The sslip.io URL changes if the
   stack is rebuilt (new Elastic IP); a real domain would avoid that.
+
+### 2026-09-25: Budget decisions (Eli)
+
+- Workshop budget is **$20 per person for a week**. Eli: **Haiku 4.5 is the
+  default** model (participant docs and `claude-gateway.sh`), **Opus stays on**,
+  **no daily allowance** for now (LiteLLM `budget_duration` is the lever if needed).
+- Measured: a Claude Code session start costs a one-time prompt-cache write
+  (~$0.13–0.22 on Sonnet with 37–53k tokens; ~$0.26 Opus), then ~$0.02 per
+  Sonnet request; cache TTL is 5 min, so pauses re-pay the start. Eli compared
+  with Claude Pro ($20/mo flat, used all day on Opus); explained subscription vs
+  metered list price — not comparable.
+- Participants check their remaining budget with `GET /key/info` using their
+  own key (curl one-liner in `docs/participant-quickstart.md`, tested in bash
+  and zsh). A participant key gets 403 on `/key/list`, but `/key/info?key=<hash>`
+  of *another* key returns 200 (LiteLLM behavior); hashes are not discoverable
+  by participants and the raw key is never returned. Low risk; could be blocked
+  in Caddy later if wanted.

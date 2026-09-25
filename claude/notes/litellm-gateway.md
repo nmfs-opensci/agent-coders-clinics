@@ -24,10 +24,20 @@ apart and there is no per-person spending cap.
 - **Keys live now**: `eli-test` ($2, expires 2026-09-28), `esip-tester` ($5, 7
   days) — Eli is texting a key to Rich (ESIP) with `docs/participant-quickstart.md`.
 - **Verified**: Eli's own test as a regular participant over HTTPS worked.
-- **Next**: do real work through the gateway to measure whether $20/person/week
-  lasts (watch `python scripts/keys.py list`); then phase 6 docs for ~20 keys; a
-  real domain; handover to an ESIP/Openscapes account (see
-  `aws-setup-lessons.md` §6). Reusable skill proposed: agent-skills#22.
+- **Next (Eli, 2026-09-25): issue #5** — test and document Copilot CLI,
+  OpenCode and Aider; restructure `docs/participant-quickstart.md` (basics on
+  top, then a link per tool); add LiteLLM `cache_control_injection_points` to
+  the Claude models. Then issue #4 (real-work cost test, workshop runbook,
+  feedback). Later: a real domain, org-account handover (`aws-setup-lessons.md`
+  §6). Reusable skill proposed: agent-skills#22.
+- **Other coding tools (2026-09-25)**: the gateway answers `/v1/messages`,
+  `/v1/chat/completions` and `/v1/responses`. Copilot CLI 1.0.80 (installed in
+  `~/.local/bin`) works with `COPILOT_PROVIDER_TYPE=openai`,
+  `COPILOT_PROVIDER_BASE_URL=<url>/v1`, `COPILOT_PROVIDER_API_KEY`,
+  `COPILOT_MODEL`; a file-reading tool test passed on Haiku, Qwen3 Coder 480B
+  and GPT-OSS 120B. Through that OpenAI-style path Claude gets **no prompt
+  caching** (Haiku ~$0.02 every request vs ~$0.005 cached in Claude Code);
+  details and fix plan in issue #5.
 
 Distilled AWS lessons (read before setting up another account):
 `aws-setup-lessons.md`.

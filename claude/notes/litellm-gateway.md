@@ -301,8 +301,8 @@ Findings in us-west-2:
 - [ ] 2. Final proposal with exact resources and costs — **pause for approval**.
 - [x] 3. Build: CloudFormation stack deployed, LiteLLM healthy (Docker run, not Compose).
       Bedrock blocked until the Anthropic form is submitted.
-- [ ] 4. One model under a simple LiteLLM alias (verified IDs).
-- [ ] 5. Temporary test key (small budget, expiry); Claude Code on the hub through
+- [x] 4. Aliases `sonnet` and `haiku` → verified `us.` inference profiles.
+- [x] 5. Temporary test key (small budget, expiry); Claude Code on the hub through
       the tunnel; confirm usage shows in LiteLLM.
 - [ ] 6. Docs: scaling to ~20 keys, disabling keys, teardown.
 
@@ -327,3 +327,22 @@ Findings in us-west-2:
   `healthy`, `db connected`. `env.sh`, README and AGENTS.md now default to the
   `greenfield` profile. `litellm-smoke-test` holds nothing billable; closing it
   is Eli's call. Next: phase 5 smoke test (tunnel, one key, Claude Code).
+
+### 2026-09-25: Phase 5 smoke test passed (Greenfield)
+
+- One admin `converse` call each to Sonnet 4.6 and Haiku 4.5 in Greenfield
+  first (completes the Marketplace subscription the server role cannot).
+- `scripts/tunnel.sh` → `localhost:4000` alive. `python scripts/keys.py create
+  eli-test --budget 2 --days 3` → key in `secrets/eli-test.key` (mode 600),
+  expires 2026-09-28.
+- `scripts/claude-gateway.sh eli-test -p "Reply with exactly: gateway ok"` →
+  Claude Code returned `gateway ok`, no error.
+- LiteLLM recorded it against the key, but only after ~1 minute (spend is
+  written to Postgres in batches): one `/spend/logs` row,
+  `bedrock/us.anthropic.claude-sonnet-4-6`, 33,879 input + 5 output tokens,
+  **$0.1398**; key spend $0.1398 of $2. So LiteLLM's cost map prices the `us.`
+  profile, and the first turn was billed as a prompt-cache *write* (1.25 × $3.30/M).
+- **Budget sizing lesson:** Claude Code sends ~34k tokens of system prompt and
+  tool definitions with every request, so even "hello" costs ~$0.11–0.14 on the
+  first turn; later turns are mostly cache reads ($0.33/M). A $2 key is a few
+  dozen turns of real work, not a workshop's worth. Revisit in phase 6.

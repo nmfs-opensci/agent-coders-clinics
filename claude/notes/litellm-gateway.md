@@ -10,6 +10,9 @@ Why not the ESIP 2026 pattern (Rich's `OpenScienceComputing/ESIP-2026-virtual-ag
 there everyone shares one IAM access key, so Bedrock cannot tell participants
 apart and there is no per-person spending cap.
 
+Distilled AWS lessons (read before setting up another account):
+`aws-setup-lessons.md`.
+
 ## Decisions and why
 
 - **Smoke test in Eli's personal AWS account, then hand over to an org account**

@@ -236,18 +236,37 @@ Resources:
               # rates from the AWS Pricing API (2026-09-25), because LiteLLM's own
               # price list lacks some of them for this Region and a missing price
               # would record $0 spend and make budgets useless.
+              # Claude caching for OpenAI-style tools (Copilot CLI, OpenCode, Aider):
+              # LiteLLM adds cache markers on the system prompt and the latest
+              # message. It stands down when the client sets its own markers, so
+              # Claude Code is unaffected.
               - model_name: claude-sonnet-4-6
                 litellm_params:
                   model: bedrock/us.anthropic.claude-sonnet-4-6
                   aws_region_name: ${AWS::Region}
+                  cache_control_injection_points:
+                    - location: message
+                      role: system
+                    - location: message
+                      index: -1
               - model_name: claude-haiku-4-5-20251001
                 litellm_params:
                   model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
                   aws_region_name: ${AWS::Region}
+                  cache_control_injection_points:
+                    - location: message
+                      role: system
+                    - location: message
+                      index: -1
               - model_name: claude-opus-4-6
                 litellm_params:
                   model: bedrock/us.anthropic.claude-opus-4-6-v1
                   aws_region_name: ${AWS::Region}
+                  cache_control_injection_points:
+                    - location: message
+                      role: system
+                    - location: message
+                      index: -1
               - model_name: qwen3-coder-480b
                 litellm_params:
                   model: bedrock/converse/qwen.qwen3-coder-480b-a35b-v1:0

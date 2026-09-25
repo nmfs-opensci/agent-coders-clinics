@@ -18,8 +18,7 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
   OpenAI-style tools (live), and `docs/participant-quickstart.md` rewritten for
   **Claude Code, OpenCode and Copilot CLI** (Aider dropped by Eli). Rich
   Signell's PR #6 (set the key first) merged into it; Eli then rearranged the
-  basics section by hand. Issue #5 is still open: every task in it is done,
-  so it can be closed when Eli says. Details: `claude/notes/other-coding-tools.md`.
+  basics section by hand. Issue #5 closed 2026-09-25. Details: `claude/notes/other-coding-tools.md`.
 - **Next open thread: issue #4**: real-work cost test, workshop runbook,
   colleague feedback.
 - **AWS lessons** (account kinds, logins, member-account roles, per-account

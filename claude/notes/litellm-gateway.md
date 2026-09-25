@@ -346,3 +346,12 @@ Findings in us-west-2:
   tool definitions with every request, so even "hello" costs ~$0.11–0.14 on the
   first turn; later turns are mostly cache reads ($0.33/M). A $2 key is a few
   dozen turns of real work, not a workshop's worth. Revisit in phase 6.
+- **Interactive participant test (Eli, `~/test`, 2026-09-25):** $0.85 for
+  "init and a few starter files": 29 requests, ~25 of them Sonnet, context
+  50–58k tokens each (interactive Claude Code with Eli's global CLAUDE.md,
+  skills, memory, MCP tools; a fresh install is nearer 30k). Prompt caching works
+  through LiteLLM → Bedrock (cache reads ~50k per request), so the floor is
+  ~$0.02 per Sonnet request plus ~$0.21 for the first cache write. Claude Code's
+  `/usage` matched LiteLLM's spend. `/compact` does not help: the bulk is fixed
+  system prompt + tools. Workshop estimate: $3–8 per person-hour on Sonnet;
+  levers are Haiku as main model, lean participant setups, budget sized to session.

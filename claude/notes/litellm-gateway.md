@@ -131,6 +131,13 @@ connect-ai-coding-tool, project-regions, activate-advanced-features), 2026-09-24
   Haiku 4.5 5M; newest models 0). SCPs never apply to a management account, so
   the region guardrail does not constrain it. Best practice is to keep workloads
   out of the management account; building the smoke test there is Eli's call.
+- Getting into Greenfield failed every way tried: console/`aws login` show the
+  "appeal" page; from the management account, `sts:AssumeRole` into Greenfield's
+  `OrganizationAccountAccessRole` and `managed/AccountFullAccessRole` is denied
+  (new-experience accounts lack the usual org access role); and **all three
+  accounts share the root email e2holmes@gmail.com**, so root sign-in with it
+  lands in the management account, not Greenfield. Setting the management root
+  password invalidates existing `aws login` sessions (log in again).
 
 ## Old personal account inspection (2026-09-24, `scripts/inspect_account.py`)
 

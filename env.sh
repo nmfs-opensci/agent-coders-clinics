@@ -4,8 +4,11 @@
 # JupyterHub's built-in AWS role, which would otherwise be picked up first and
 # send commands to the hub's account instead of yours.
 
+# AWS_BEARER_TOKEN_BEDROCK is a Bedrock API key; when set, the AWS CLI and boto3
+# use it for Bedrock calls instead of the profile, i.e. possibly another account.
 unset AWS_ROLE_ARN AWS_WEB_IDENTITY_TOKEN_FILE AWS_ROLE_SESSION_NAME \
-      AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+      AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN \
+      AWS_BEARER_TOKEN_BEDROCK
 
 # litellm-smoke is the account the gateway is built in. It is reached by
 # assuming a role from the litellm-poc login (see README), so `aws login`

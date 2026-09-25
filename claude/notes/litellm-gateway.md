@@ -302,3 +302,18 @@ Findings in us-west-2:
 - [ ] 5. Temporary test key (small budget, expiry); Claude Code on the hub through
       the tunnel; confirm usage shows in LiteLLM.
 - [ ] 6. Docs: scaling to ~20 keys, disabling keys, teardown.
+
+### 2026-09-25: Greenfield reachable, and the cause of the member-account block
+
+- Greenfield Adventures (…9870) was created by AWS at sign-up, so it had no
+  `OrganizationAccountAccessRole`. Eli created it by hand in the IAM console
+  (trusted account = management, AdministratorAccess). Pasting JSON through the
+  hub terminal kept breaking (wrapped lines, stray spaces); the console wizard
+  avoids JSON entirely. `scripts/add-org-access-role.sh` does the same from CloudShell.
+- `~/.aws/config` now has `[profile greenfield]` (role chained from `litellm-poc`).
+- Greenfield had been blocked for lack of a payment method: each account in this
+  "new experience" org apparently needs its own. After Eli added one, Greenfield
+  runs GPT-OSS 120b/20b and Claude Haiku (Claude possibly in the first-call grace
+  period; the FTU form is not yet submitted there).
+- `litellm-smoke-test` still refuses every model, GPT-OSS included, so its block
+  is account-level (likely the same missing payment method), not the Anthropic form.

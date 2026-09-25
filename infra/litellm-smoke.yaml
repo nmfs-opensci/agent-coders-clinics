@@ -10,11 +10,19 @@ Parameters:
   SonnetProfileId:
     Type: String
     Default: us.anthropic.claude-sonnet-4-6
-    Description: Bedrock inference profile served as the LiteLLM model "sonnet".
+    Description: Bedrock inference profile behind SonnetModelName.
   HaikuProfileId:
     Type: String
     Default: us.anthropic.claude-haiku-4-5-20251001-v1:0
-    Description: Bedrock inference profile served as the LiteLLM model "haiku".
+    Description: Bedrock inference profile behind HaikuModelName.
+  # Model names clients ask for. Anthropic API IDs, so Claude Code recognizes
+  # them and shows the real name, context size and price (not "Custom model").
+  SonnetModelName:
+    Type: String
+    Default: claude-sonnet-4-6
+  HaikuModelName:
+    Type: String
+    Default: claude-haiku-4-5-20251001
   LiteLLMImage:
     Type: String
     # v1.102.1, pinned by digest (multi-arch index; includes arm64).
@@ -182,11 +190,11 @@ Resources:
 
           cat > config.yaml <<'CONFIG'
           model_list:
-            - model_name: sonnet
+            - model_name: ${SonnetModelName}
               litellm_params:
                 model: bedrock/${SonnetProfileId}
                 aws_region_name: ${AWS::Region}
-            - model_name: haiku
+            - model_name: ${HaikuModelName}
               litellm_params:
                 model: bedrock/${HaikuProfileId}
                 aws_region_name: ${AWS::Region}

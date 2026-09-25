@@ -22,7 +22,8 @@ import boto3
 import requests
 
 SECRETS = pathlib.Path(__file__).resolve().parent.parent / "secrets"
-MODELS = ["sonnet", "haiku"]
+# Must match SonnetModelName / HaikuModelName in infra/litellm-smoke.yaml.
+MODELS = ["claude-sonnet-4-6", "claude-haiku-4-5-20251001"]
 
 
 def master_key(prefix):

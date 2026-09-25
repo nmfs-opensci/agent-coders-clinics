@@ -355,3 +355,11 @@ Findings in us-west-2:
   `/usage` matched LiteLLM's spend. `/compact` does not help: the bulk is fixed
   system prompt + tools. Workshop estimate: $3–8 per person-hour on Sonnet;
   levers are Haiku as main model, lean participant setups, budget sized to session.
+- **Model names are now Anthropic API IDs** (`claude-sonnet-4-6`,
+  `claude-haiku-4-5-20251001`), not `sonnet`/`haiku`. With the short aliases,
+  Claude Code's `/model` said "Custom haiku model"; with real IDs it recognizes
+  the model (name, context size, pricing in `/usage`). Template parameters
+  `SonnetModelName`/`HaikuModelName`; `keys.py` MODELS must match. Applied to
+  the running instance by editing `/opt/litellm/config.yaml` over SSM and
+  restarting the container (user data only runs on first boot, so a stack
+  update would not rewrite it), and `eli-test` updated via `/key/update`.

@@ -15,9 +15,9 @@ unset CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX ANTHROPIC_API_KEY \
 export ANTHROPIC_BASE_URL="${LITELLM_URL:-http://localhost:4000}"
 ANTHROPIC_AUTH_TOKEN="$(tr -d '[:space:]' < "$keyfile")"
 export ANTHROPIC_AUTH_TOKEN
-# Claude Code picks models by tier; map every tier to an alias the gateway serves.
-export ANTHROPIC_MODEL=sonnet
-export ANTHROPIC_DEFAULT_OPUS_MODEL=sonnet
-export ANTHROPIC_DEFAULT_SONNET_MODEL=sonnet
-export ANTHROPIC_DEFAULT_HAIKU_MODEL=haiku
+# Claude Code picks models by tier; map every tier to a model the gateway serves.
+export ANTHROPIC_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
 exec claude "$@"

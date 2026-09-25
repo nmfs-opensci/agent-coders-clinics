@@ -221,3 +221,4 @@ __marimo__/
 secrets/
 *-keys.csv
 *-keys.json
+.ipynb_checkpoints/

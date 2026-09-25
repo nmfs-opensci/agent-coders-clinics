@@ -13,10 +13,10 @@ In a terminal, paste these lines one at a time, replacing the key:
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:4000
 export ANTHROPIC_AUTH_TOKEN=sk-your-key-here
-export ANTHROPIC_MODEL=sonnet
-export ANTHROPIC_DEFAULT_OPUS_MODEL=sonnet
-export ANTHROPIC_DEFAULT_SONNET_MODEL=sonnet
-export ANTHROPIC_DEFAULT_HAIKU_MODEL=haiku
+export ANTHROPIC_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
 ```
 
 If you normally use Claude Code another way (Bedrock, or an Anthropic API key),

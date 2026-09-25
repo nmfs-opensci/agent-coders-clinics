@@ -112,6 +112,8 @@ def delete(gw, args):
 
 
 def main():
+    if "AWS_ROLE_ARN" in os.environ or not os.environ.get("AWS_PROFILE"):
+        sys.exit("Run `source env.sh` first (in ~/agent-coders-clinics), then try again.")
     ap = argparse.ArgumentParser(description="Manage LiteLLM test keys.")
     ap.add_argument("--url", default=os.environ.get("LITELLM_URL"), help="default: the stack's GatewayUrl")
     ap.add_argument("--prefix", default=os.environ.get("LITELLM_STACK", "litellm-smoke"))

@@ -10,6 +10,24 @@ Why not the ESIP 2026 pattern (Rich's `OpenScienceComputing/ESIP-2026-virtual-ag
 there everyone shares one IAM access key, so Bedrock cannot tell participants
 apart and there is no per-person spending cap.
 
+## Current state (2026-09-25; read this first — history below is chronological)
+
+- **Merged**: PR #2 (squash of branch `litellm-gateway-setup`, kept). Issue #1 open.
+- **Running** in account Greenfield Adventures (…9870, profile `greenfield`,
+  us-east-2), stack `litellm-smoke`, instance `i-02b88c4d367c1b7d3`,
+  **`https://18.227.15.211.sslip.io`** (Caddy + Let's Encrypt on an Elastic IP;
+  URL changes if the stack is rebuilt). ~$0.57/day running, ~$5/month stopped.
+- **11 coding models**, Haiku 4.5 default for participants, Opus on, no daily
+  allowance (Eli's decisions). Admin UI `/ui`, user `admin`, password in SSM
+  `/litellm-smoke/ui-password`.
+- **Keys live now**: `eli-test` ($2, expires 2026-09-28), `esip-tester` ($5, 7
+  days) — Eli is texting a key to Rich (ESIP) with `docs/participant-quickstart.md`.
+- **Verified**: Eli's own test as a regular participant over HTTPS worked.
+- **Next**: do real work through the gateway to measure whether $20/person/week
+  lasts (watch `python scripts/keys.py list`); then phase 6 docs for ~20 keys; a
+  real domain; handover to an ESIP/Openscapes account (see
+  `aws-setup-lessons.md` §6). Reusable skill proposed: agent-skills#22.
+
 Distilled AWS lessons (read before setting up another account):
 `aws-setup-lessons.md`.
 
@@ -294,17 +312,16 @@ Findings in us-west-2:
 
 - [x] 0. Pared-down environment: `.venv`, `requirements.txt`, `env.sh`, AWS CLI v2,
       session-manager-plugin.
-- [x] 1. `aws login --profile litellm-poc`; read-only inspection (findings above).
-      Redone for the new setup: account `litellm-smoke-test`, us-east-2 (pending
-      Haiku verification hold).
-      Rerun `python scripts/inspect_account.py` against the org account later.
-- [ ] 2. Final proposal with exact resources and costs — **pause for approval**.
-- [x] 3. Build: CloudFormation stack deployed, LiteLLM healthy (Docker run, not Compose).
-      Bedrock blocked until the Anthropic form is submitted.
-- [x] 4. Aliases `sonnet` and `haiku` → verified `us.` inference profiles.
-- [x] 5. Temporary test key (small budget, expiry); Claude Code on the hub through
-      the tunnel; confirm usage shows in LiteLLM.
-- [ ] 6. Docs: scaling to ~20 keys, disabling keys, teardown.
+- [x] 1. Account inspection (`scripts/inspect_account.py`). Rerun it against the
+      org account before the handover.
+- [x] 2. Proposal with resources and costs, approved by Eli.
+- [x] 3. Build: one CloudFormation stack (now in Greenfield, with HTTPS).
+- [x] 4. Models under simple names: 11 coding models, verified IDs and prices.
+- [x] 5. Test key with budget and expiry; Claude Code through the gateway; usage
+      and spend recorded per key.
+- [ ] 6. Docs: scaling to ~20 keys, disabling keys, teardown. Largely covered by
+      `docs/organizer.md`; still to write: a 20-person runbook and budget advice
+      from the real-work measurement.
 
 ### 2026-09-25: Greenfield reachable, and the cause of the member-account block
 

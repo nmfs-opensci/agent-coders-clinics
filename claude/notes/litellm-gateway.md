@@ -45,7 +45,7 @@ apart and there is no per-person spending cap.
   will not work for them; they need an HTTPS endpoint — Caddy on the instance
   (needs a domain name) or an ALB + ACM certificate (~$16/month more). Eli to decide.
 
-## Phase 2 proposal (2026-09-25, awaiting Eli's approval)
+## Phase 2 proposal (2026-09-25, approved and built — see Phase 3 status)
 
 Account `litellm-smoke-test`, us-east-2, one CloudFormation stack `litellm-smoke`.
 
@@ -83,6 +83,27 @@ Account `litellm-smoke-test`, us-east-2, one CloudFormation stack `litellm-smoke
   and a launcher that opens the tunnel and starts Claude Code with the gateway
   variables, clearing `CLAUDE_CODE_USE_BEDROCK`, `ANTHROPIC_API_KEY`,
   `ANTHROPIC_BASE_URL` inherited from Eli's Claude launchers.
+
+## Phase 3 status (2026-09-25)
+
+- **Deployed**: stack `litellm-smoke` in `litellm-smoke-test`, us-east-2,
+  instance `i-06191ef874077e6d1`. LiteLLM v1.102.1 reports `healthy`, `db:
+  connected`; checked with SSM run-command (`/health/readiness`), not by reading
+  logs (logs can contain the DB URL). Secrets created in `/litellm-smoke/*`.
+- **Blocked on the Anthropic use-case form.** The earlier Claude successes in
+  the management account and `litellm-smoke-test` were Bedrock's first-call
+  grace period; afterwards Sonnet and Haiku return `ValidationException:
+  Operation not allowed` in the member account and `ResourceNotFoundException:
+  Model use case details have not been submitted` in the management account
+  (Haiku `authorizationStatus` NOT_AUTHORIZED). Fix: submit the form in the
+  **management account** (it is inherited by the organization), then make one
+  admin-role call per model so the Marketplace subscription completes — the
+  instance role has no `aws-marketplace:*` permissions and cannot trigger it.
+- **Scope change from Eli:** one test key now. Two keys (two JupyterHubs as two
+  pretend users) wait for Phase 4 with an HTTPS endpoint, because each hub
+  would otherwise need its own AWS login to run the tunnel.
+- Development check: `pip install -r requirements-dev.txt` then
+  `cfn-lint infra/litellm-smoke.yaml`.
 
 ## Environment (pared down on purpose)
 
@@ -265,7 +286,8 @@ Findings in us-west-2:
       Haiku verification hold).
       Rerun `python scripts/inspect_account.py` against the org account later.
 - [ ] 2. Final proposal with exact resources and costs — **pause for approval**.
-- [ ] 3. Build: CloudFormation template + compose file, secrets in Parameter Store.
+- [x] 3. Build: CloudFormation stack deployed, LiteLLM healthy (Docker run, not Compose).
+      Bedrock blocked until the Anthropic form is submitted.
 - [ ] 4. One model under a simple LiteLLM alias (verified IDs).
 - [ ] 5. Temporary test key (small budget, expiry); Claude Code on the hub through
       the tunnel; confirm usage shows in LiteLLM.

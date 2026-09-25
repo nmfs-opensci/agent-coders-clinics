@@ -12,7 +12,7 @@ apart and there is no per-person spending cap.
 
 ## Current state (2026-09-25; read this first — history below is chronological)
 
-- **Merged**: PR #2 (merge commit; branch `litellm-gateway-setup` kept). Issue #1 open.
+- **Merged**: PR #2 (gateway) and PR #3 (README links); branches deleted. Issue #1 open.
 - **Running** in account Greenfield Adventures (…9870, profile `greenfield`,
   us-east-2), stack `litellm-smoke`, instance `i-02b88c4d367c1b7d3`,
   **`https://18.227.15.211.sslip.io`** (Caddy + Let's Encrypt on an Elastic IP;

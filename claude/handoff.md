@@ -14,8 +14,10 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
   shared with colleagues. Follow-up is **issue #4**: real-work cost test,
   workshop runbook, colleague feedback. **Issue #5**: other coding tools
   (Copilot CLI tested and working; OpenCode, Aider to do), a per-tool
-  participant quickstart, and a caching fix for Claude via OpenAI-style tools. Start with "Current state" at the top of
-  `claude/notes/litellm-gateway.md` (what is running, live keys, next steps).
+  participant quickstart, and a caching fix for Claude via OpenAI-style tools.
+  What is running, keys, models, costs: `claude/notes/litellm-gateway.md`.
+  Issue #5 progress: `claude/notes/other-coding-tools.md`. Build history and
+  superseded decisions: `claude/notes/litellm-gateway-history.md` (on demand).
 - **AWS lessons** (account kinds, logins, member-account roles, per-account
   Bedrock checklist): `claude/notes/aws-setup-lessons.md`.
 - Reusable-skill proposal from this work: nmfs-opensci/agent-skills#22.
@@ -23,8 +25,9 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
 
 ## Working principles
 
-- Eli compacts often and is on the Pro plan: keep state in `claude/notes/`, work
-  one phase per sitting, keep command output short.
+- Eli is on the Pro plan and clears between tasks rather than compacting: keep
+  state in `claude/notes/`, keep notes lean (current facts in one note, history
+  in another), work one phase per sitting, keep command output short.
 - Always `source env.sh` before AWS commands (it removes the hub's own AWS role).
 - Pause before creating any AWS resource that costs money while idle.
 - Eli cannot copy reliably from the Claude Code terminal: put commands Eli must

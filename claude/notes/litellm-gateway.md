@@ -384,3 +384,25 @@ Findings in us-west-2:
 - `keys.py create` now gives access to all served models unless `--models` is
   given; `keys.py models` lists them. Stack rebuilt (instance
   `i-081f81bfdd80e4e3d`); new `eli-test` key, $2, expires 2026-09-28.
+
+### 2026-09-25: Phase 4 HTTPS (approved by Eli: sslip.io name, UI with its own password)
+
+- Stack now adds an **Elastic IP**, inbound **443 and 80** (80 = Let's Encrypt
+  challenge and redirect), and **Caddy** (`caddy:2.11.4-alpine`, pinned by
+  digest) reverse-proxying to `litellm:4000`. Hostname is
+  `<eip>.sslip.io` unless the `DomainName` parameter is set (then add a DNS A
+  record). Output `GatewayUrl`. Current: `https://18.227.15.211.sslip.io`,
+  instance `i-02b88c4d367c1b7d3`.
+- Admin UI at `/ui`, user `admin`, password in `/litellm-smoke/ui-password`
+  (new secret from `make_secrets.py`; LiteLLM `UI_USERNAME`/`UI_PASSWORD`), so
+  the master key is never typed in a browser. Login checked: right 303, wrong 401.
+- Verified: Let's Encrypt cert (expires 2026-12-24, Caddy renews), no key → 401,
+  http → 308 to https, Claude Code over HTTPS with no tunnel returned "https ok".
+- `keys.py` and `claude-gateway.sh` default to the stack's `GatewayUrl`;
+  `LITELLM_URL=http://localhost:4000` + `scripts/tunnel.sh` still works for admins.
+- Stopped cost is now ~$5/month (the Elastic IP charges $3.60/month while the
+  instance is stopped). Teardown releases it.
+- Docs: `docs/organizer.md` (keys for testers, watching spend, UI password,
+  stop/teardown), participant docs point at the HTTPS URL.
+- Next: Eli sends a key to the ESIP colleague. The sslip.io URL changes if the
+  stack is rebuilt (new Elastic IP); a real domain would avoid that.

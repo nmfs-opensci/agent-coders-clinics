@@ -13,7 +13,7 @@ read -r -p "Delete stack '$STACK' and /$STACK/* secrets in $AWS_REGION? Type the
 aws cloudformation delete-stack --stack-name "$STACK"
 aws cloudformation wait stack-delete-complete --stack-name "$STACK"
 echo "Stack deleted."
-for name in master-key db-password salt-key; do
+for name in master-key db-password salt-key ui-password; do
   aws ssm delete-parameter --name "/$STACK/$name" 2>/dev/null && echo "Deleted /$STACK/$name" || true
 done
 rm -f secrets/*.key

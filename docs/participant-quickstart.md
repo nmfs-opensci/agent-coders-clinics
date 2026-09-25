@@ -2,7 +2,7 @@
 
 You will receive two things from the organizer:
 
-- a **gateway URL** (for the smoke test: `http://localhost:4000`)
+- a **gateway URL** (for the smoke test: `https://18.227.15.211.sslip.io`)
 - a **personal key** (starts with `sk-`). Keep it private; it has its own
   spending limit and expiry date.
 
@@ -11,7 +11,7 @@ You will receive two things from the organizer:
 In a terminal, paste these lines one at a time, replacing the key:
 
 ```bash
-export ANTHROPIC_BASE_URL=http://localhost:4000
+export ANTHROPIC_BASE_URL=https://18.227.15.211.sslip.io
 export ANTHROPIC_AUTH_TOKEN=sk-your-key-here
 export ANTHROPIC_MODEL=claude-sonnet-4-6
 export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-sonnet-4-6
@@ -54,4 +54,4 @@ export ANTHROPIC_AUTH_TOKEN=$(cat ~/agent-coders-clinics/secrets/eli-test.key)
 
 - **Budget exceeded**: your key has used its spending limit. Ask the organizer.
 - **Key expired / blocked**: the key's time is up or it was switched off.
-- **Connection refused** (smoke test): the tunnel to the gateway is not running.
+- **Connection refused / timeout**: the gateway server is stopped. Ask the organizer.

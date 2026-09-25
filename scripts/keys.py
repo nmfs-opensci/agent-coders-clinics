@@ -1,6 +1,8 @@
 """Manage LiteLLM virtual keys for test users, through the tunnel.
 
-Run after `source env.sh`, with scripts/tunnel.sh running in another terminal:
+Run after `source env.sh`. Talks to the gateway's HTTPS address (the stack's
+GatewayUrl output), or to LITELLM_URL if set, e.g. http://localhost:4000 with
+scripts/tunnel.sh running:
 
   python scripts/keys.py create alice --budget 2 --days 3
   python scripts/keys.py create bob --models claude-sonnet-4-6 qwen3-coder-480b
@@ -24,6 +26,11 @@ import boto3
 import requests
 
 SECRETS = pathlib.Path(__file__).resolve().parent.parent / "secrets"
+
+
+def gateway_url(stack):
+    outputs = boto3.client("cloudformation").describe_stacks(StackName=stack)["Stacks"][0]["Outputs"]
+    return next(o["OutputValue"] for o in outputs if o["OutputKey"] == "GatewayUrl")
 
 
 def master_key(prefix):
@@ -106,7 +113,7 @@ def delete(gw, args):
 
 def main():
     ap = argparse.ArgumentParser(description="Manage LiteLLM test keys.")
-    ap.add_argument("--url", default=os.environ.get("LITELLM_URL", "http://localhost:4000"))
+    ap.add_argument("--url", default=os.environ.get("LITELLM_URL"), help="default: the stack's GatewayUrl")
     ap.add_argument("--prefix", default=os.environ.get("LITELLM_STACK", "litellm-smoke"))
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("create")
@@ -120,7 +127,7 @@ def main():
         sub.add_parser(name).add_argument("user")
     args = ap.parse_args()
 
-    gw = Gateway(args.url, args.prefix)
+    gw = Gateway(args.url or gateway_url(args.prefix), args.prefix)
     {
         "create": create,
         "list": show,

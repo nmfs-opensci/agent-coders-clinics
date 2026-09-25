@@ -2,7 +2,8 @@
 
 Run after `source env.sh`:  python scripts/make_secrets.py [--prefix litellm-smoke]
 
-Creates SecureString parameters /<prefix>/master-key, db-password and salt-key
+Creates SecureString parameters /<prefix>/master-key, db-password, salt-key
+and ui-password
 with random values if they do not already exist. Existing values are never
 overwritten: changing the salt key would make LiteLLM's stored data unreadable.
 Values are never printed.
@@ -20,6 +21,8 @@ GENERATORS = {
     # Hex only, so it can sit in a postgresql:// URL without escaping.
     "db-password": lambda: secrets.token_hex(24),
     "salt-key": lambda: "sk-" + secrets.token_urlsafe(32),
+    # Admin UI login (user "admin"), separate from the master key.
+    "ui-password": lambda: secrets.token_urlsafe(18),
 }
 
 

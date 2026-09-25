@@ -6,6 +6,13 @@ Repo for the agent-coders team in Openscapes Champions cohort 2026
 A test of running Claude Code through a LiteLLM proxy to Amazon Bedrock, with a
 separate budget and expiry for each participant's key. See issue #1.
 
+- Participants: [docs/participant-quickstart.md](docs/participant-quickstart.md)
+- Organizers (keys, spend, stop/teardown): [docs/organizer.md](docs/organizer.md)
+- Infrastructure: `infra/litellm-smoke.yaml` (one CloudFormation stack), deployed
+  with `scripts/deploy.sh`
+
+The setup steps below are for the person who deploys and runs the gateway.
+
 ### Environment setup (JupyterHub, Linux x86_64)
 
 AWS CLI v2 and the Session Manager plugin are not pip packages. Install them

@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  LiteLLM gateway smoke test: one EC2 instance running LiteLLM + Postgres in
+  Docker, calling Claude on Amazon Bedrock with the instance role. No inbound
+  ports; reach it with SSM port forwarding (scripts/tunnel.sh). Secrets live in
+  SSM Parameter Store under /<stack name>/ and are created by
+  scripts/make_secrets.py before this stack is deployed.
+
+Parameters:
+  SonnetProfileId:
+    Type: String
+    Default: us.anthropic.claude-sonnet-4-6
+    Description: Bedrock inference profile served as the LiteLLM model "sonnet".
+  HaikuProfileId:
+    Type: String
+    Default: us.anthropic.claude-haiku-4-5-20251001-v1:0
+    Description: Bedrock inference profile served as the LiteLLM model "haiku".
+  LiteLLMImage:
+    Type: String
+    # v1.102.1, pinned by digest (multi-arch index; includes arm64).
+    Default: ghcr.io/berriai/litellm-database:v1.102.1@sha256:c38fe5eff11874941a21f5630ceb842f640dee7d5d5cde440b60ed0a71798f33
+  PostgresImage:
+    Type: String
+    Default: public.ecr.aws/docker/library/postgres:16-alpine
+  InstanceType:
+    Type: String
+    Default: t4g.small
+  AmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.42.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{ Key: Name, Value: !Ref AWS::StackName }]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.42.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      # A public address lets the instance reach Bedrock, SSM and the image
+      # registries without a NAT gateway. Nothing inbound is allowed.
+      MapPublicIpOnLaunch: true
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  SubnetRouteTable:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref RouteTable
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: No inbound; outbound HTTPS only
+      VpcId: !Ref Vpc
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ec2.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: bedrock-and-secrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Cross-Region inference needs the profile and the underlying
+              # model in every Region the profile routes to.
+              - Sid: InvokeTwoProfiles
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${SonnetProfileId}
+                  - !Sub arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${HaikuProfileId}
+                  - arn:aws:bedrock:*::foundation-model/anthropic.*
+              - Sid: ReadOwnSecrets
+                Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref InstanceRole]
+
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        MetadataOptions:
+          HttpTokens: required
+          # 2 hops so the LiteLLM container can get the instance role's credentials.
+          HttpPutResponseHopLimit: 2
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 20
+              VolumeType: gp3
+              Encrypted: true
+              DeleteOnTermination: true
+
+  Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: DefaultRoute
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds: [!Ref InstanceSecurityGroup]
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      Tags: [{ Key: Name, Value: !Ref AWS::StackName }]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Runs once at first boot. Output goes to /var/log/litellm-setup.log;
+          # secret values are only written to root-only env files, never logged.
+          set -euo pipefail
+          exec > >(tee -a /var/log/litellm-setup.log) 2>&1
+          dnf install -y docker
+          systemctl enable --now docker
+          mkdir -p /opt/litellm/pgdata
+          cd /opt/litellm
+
+          get() {
+            aws ssm get-parameter --region ${AWS::Region} --with-decryption \
+              --name "/${AWS::StackName}/$1" --query Parameter.Value --output text
+          }
+          MASTER=$(get master-key)
+          DBPW=$(get db-password)
+          SALT=$(get salt-key)
+
+          umask 077
+          printf 'POSTGRES_USER=litellm\nPOSTGRES_PASSWORD=%s\nPOSTGRES_DB=litellm\n' "$DBPW" > db.env
+          printf 'LITELLM_MASTER_KEY=%s\nLITELLM_SALT_KEY=%s\nDATABASE_URL=postgresql://litellm:%s@db:5432/litellm\nAWS_REGION=${AWS::Region}\n' \
+            "$MASTER" "$SALT" "$DBPW" > litellm.env
+          unset MASTER DBPW SALT
+          umask 022
+
+          cat > config.yaml <<'CONFIG'
+          model_list:
+            - model_name: sonnet
+              litellm_params:
+                model: bedrock/${SonnetProfileId}
+                aws_region_name: ${AWS::Region}
+            - model_name: haiku
+              litellm_params:
+                model: bedrock/${HaikuProfileId}
+                aws_region_name: ${AWS::Region}
+          general_settings:
+            master_key: os.environ/LITELLM_MASTER_KEY
+            database_url: os.environ/DATABASE_URL
+          litellm_settings:
+            drop_params: true
+          CONFIG
+
+          docker network create litellm || true
+          docker run -d --name db --restart unless-stopped --network litellm \
+            --env-file db.env -v /opt/litellm/pgdata:/var/lib/postgresql/data \
+            ${PostgresImage}
+          until docker exec db pg_isready -U litellm; do sleep 2; done
+          docker run -d --name litellm --restart unless-stopped --network litellm \
+            --env-file litellm.env -v /opt/litellm/config.yaml:/app/config.yaml:ro \
+            -p 127.0.0.1:4000:4000 \
+            ${LiteLLMImage} --config /app/config.yaml --port 4000
+          echo "litellm-setup: done"
+
+Outputs:
+  InstanceId:
+    Value: !Ref Instance
+    Description: Target for scripts/tunnel.sh (SSM port forwarding)

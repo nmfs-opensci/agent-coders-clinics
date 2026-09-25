@@ -1,0 +1,2 @@
+# Development-only tools (template checking); not needed to run the gateway.
+cfn-lint>=1.20

@@ -22,11 +22,14 @@ Other options (Homebrew, Windows) are at
 
 ## 2. Point Claude Code at the gateway
 
-In a terminal, run these lines, putting your key in the second one:
+In a terminal, first specify your key:
+```bash
+export ANTHROPIC_AUTH_TOKEN=sk-your-key-here
+```
+then run these lines:
 
 ```bash
 export ANTHROPIC_BASE_URL=https://18.227.15.211.sslip.io
-export ANTHROPIC_AUTH_TOKEN=sk-your-key-here
 export ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
 export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6

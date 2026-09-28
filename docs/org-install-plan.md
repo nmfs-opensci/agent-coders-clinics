@@ -156,7 +156,8 @@ Work on a branch, e.g. `org-install`.
    (a model with no price records $0 spend and makes budgets useless).
 3. **Hard-coded gateway URL**: the author's URL
    (`https://18.227.15.211.sslip.io`) is in `hub/claude-tester` and `docs/`.
-   Replace it in Phase 7/8, once the new URL is known.
+   Leave `hub/claude-tester` alone (it stays on the test gateway); the new
+   URL goes into the new script (Phase 7) and the doc copies (Phase 8).
 4. `pip install -r requirements-dev.txt` and
    `cfn-lint infra/litellm-smoke.yaml` must be clean.
 5. Show the installer the diff.

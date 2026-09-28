@@ -3,6 +3,14 @@
 Decided with Eli 2026-09-28. Three tasks, **in this order, with a clear
 between each**. Work on the one Eli names; do not run ahead.
 
+**Status (2026-09-28, end of day):** A is done (agent-skills #25 → PR #26,
+merged). A new task goes before B: **agent-skills #27**, giving the organizer
+their own revocable admin key instead of the master key. It comes before C
+because C tells the installer what to send the organizer. B does not depend on
+it. So: A ✓ → #27 → B → C. In the skill, the no-AWS files are now
+`secrets/gateway-url` and `secrets/master-key` (to become `organizer-key` with
+#27), not `LITELLM_*` variables.
+
 ## Why
 
 A colleague will install the gateway in the org AWS account. A first plan

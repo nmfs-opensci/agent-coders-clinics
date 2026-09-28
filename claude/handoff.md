@@ -13,13 +13,9 @@ Eli asked (2026-09-28) to be reminded of these when coming back:
 
 1. **Delete the test key** `ws-eeholmes-uw` for a clean count before the
    workshop: `python scripts/keys.py delete ws-eeholmes-uw`.
-2. **Decide on the auto mode line**: add `export
-   CLAUDE_CODE_AUTO_MODE_SERVER=0` to `hub/claude-tester` (then copy it to
-   `~/shared-readwrite/agent-coders/`), so participants do not get the
-   "this session isn't eligible" notice that pauses Claude Code until Enter.
-   Why: comment on issue #9.
-
-Remove this section once both are done.
+Remove this section once it is done. (The auto mode line was decided
+2026-09-28: it went into the skill's hub script and participant quickstart, not
+into `claude-tester`, which is being retired.)
 
 ## Working on
 
@@ -40,8 +36,10 @@ Remove this section once both are done.
   group test 2026-09-29. Details, hub gotchas (login shells, no startup files,
   XDG path, Eli's terminals run as hub account `eeholmes-uw`) and open items:
   `claude/notes/workshop-key-service.md`.
-- **Next: tasks A → B → C, in order, clear between each** (decided
-  2026-09-28). A: add workshop sign-up and key management without AWS to the
+- **Next: tasks A → #27 → B → C, in order, clear between each** (decided
+  2026-09-28). **A is done**: agent-skills PR #26, merged 2026-09-28. **Next is
+  agent-skills issue #27** (an organizer key instead of the master key), worked
+  in `~/agent-skills` on branch `issue-27-organizer-key`; see that repo's handoff. A: add workshop sign-up and key management without AWS to the
   `litellm-bedrock-gateway` skill in `nmfs-opensci/agent-skills` (the skill,
   not this repo, is the installer). B: sparse public template repo
   `nmfs-opensci/litellm-bedrock-gateway`. C: minimal instructions for the

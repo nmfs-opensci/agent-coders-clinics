@@ -1,4 +1,4 @@
-# Workshop key service and `claude-tester` (plan, 2026-09-28)
+# Workshop key service and `claude-tester` (plan, 2026-09-28, issue #9)
 
 Goal: on the JupyterHub, a participant types `claude-tester` in a terminal,
 enters a workshop code once, and Claude Code runs through the gateway with
@@ -22,6 +22,14 @@ their own budget-capped key. No `sk-` strings are handed out.
   confirmed with a participant account).
 - Claude Code is not in the hub image (Eli's copy is in `~/.local/bin`), so
   the script installs it on first run.
+- **Some participants have a personal Claude account and must keep using it.**
+  `claude` stays their own; `claude-tester` is the gateway. The wrapper sets
+  variables only for the process it starts, never edits `~/.claude/`, and runs
+  Claude Code with its own `CLAUDE_CONFIG_DIR` (`~/.config/agent-coders/claude`)
+  so gateway sessions never see or disturb the personal login, settings or
+  history. This also sidesteps a participant's own `settings.json` `env` block.
+- First test with the group: **2026-09-29**, about 10 people plus drop-ins:
+  `MAX_KEYS=20`, $20, 7 days.
 
 ## Server side: `keyservice`
 
@@ -63,8 +71,8 @@ their own budget-capped key. No `sk-` strings are handed out.
    set the gateway URL, key and model variables (Haiku default, as in
    `scripts/claude-gateway.sh`), `exec claude "$@"`.
 5. `claude-tester --budget` prints the spend so far and the budget from `/key/info`.
-- Known edge case: an `env` block in a participant's own
-  `~/.claude/settings.json` could override these. Check during testing.
+- Check in testing: with a personal login present in `~/.claude/`, both
+  `claude` (personal) and `claude-tester` (gateway, `/status`) work afterwards.
 
 ## Steps (one per sitting)
 
@@ -79,6 +87,5 @@ their own budget-capped key. No `sk-` strings are handed out.
 
 ## Open questions
 
-- Workshop date, number of people (sets `MAX_KEYS`), and whether $20 / 7 days
-  still holds.
-- No GitHub issue yet: `gh` is not logged in on this hub.
+- None blocking. Because the test is tomorrow, steps 1–4 may need to run in
+  one sitting.

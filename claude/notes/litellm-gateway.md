@@ -20,8 +20,8 @@ Other coding tools (issue #5): `other-coding-tools.md`.
   stopped (the Elastic IP charges while stopped); teardown releases everything.
 - PR #2 (gateway) and #3 merged; issue #1 closed. Follow-ups: issue #5 (other
   tools, caching fix), then issue #4 (real-work cost test, workshop runbook,
-  colleague feedback). Later: a real domain, org-account handover
-  (`aws-setup-lessons.md` §6). Reusable skill proposed: agent-skills#22.
+  colleague feedback). Org-account install and the skill work:
+  `gateway-skill-tasks.md`. The reusable skill is merged (agent-skills #24).
 - **Keys live**: `eli-test` ($2, expires 2026-09-28), `esip-tester` ($5, 7
   days, for Rich at ESIP with `docs/participant-quickstart.md`).
 - Admin UI `/ui`, user `admin`, password in SSM `/litellm-smoke/ui-password`,

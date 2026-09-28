@@ -40,15 +40,24 @@ Remove this section once both are done.
   group test 2026-09-29. Details, hub gotchas (login shells, no startup files,
   XDG path, Eli's terminals run as hub account `eeholmes-uw`) and open items:
   `claude/notes/workshop-key-service.md`.
-- **Next task Eli named: instructions for a colleague's Claude agent to
-  install the gateway in the org AWS account**: step by step; the colleague
-  will probably clone nmfs-opensci/agent-skills and maybe agent-skill-clinic.
-  Start from `claude/notes/aws-setup-lessons.md` §6 (org handover).
+- **Next: tasks A → B → C, in order, clear between each** (decided
+  2026-09-28). A: add workshop sign-up and key management without AWS to the
+  `litellm-bedrock-gateway` skill in `nmfs-opensci/agent-skills` (the skill,
+  not this repo, is the installer). B: sparse public template repo
+  `nmfs-opensci/litellm-bedrock-gateway`. C: minimal instructions for the
+  colleague installing in the org account (us-west-2, Eli has no AWS access
+  there). Facts, design constraints, and what each task covers:
+  `claude/notes/gateway-skill-tasks.md`.
+- **PR #11 open, not merged** (branch `org-install-plan`): a long install plan
+  from this repo's scripts (superseded by A–C), plus `keys.py`/`workshop.py`
+  reading the master key from a file (tested) and `docs/organizer-no-aws.md`.
+  Trim or close it in task C.
 - Issue #4 still open: real-work cost test, workshop runbook, colleague
   feedback.
 - **AWS lessons** (account kinds, logins, member-account roles, per-account
   Bedrock checklist): `claude/notes/aws-setup-lessons.md`.
-- Reusable-skill proposal from this work: nmfs-opensci/agent-skills#22.
+- The reusable skill exists: `skills/litellm-bedrock-gateway` in
+  nmfs-opensci/agent-skills (merged as #24), now the gateway's source of truth.
 
 ## Working principles
 

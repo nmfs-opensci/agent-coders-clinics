@@ -1,6 +1,7 @@
 """Open, close or check workshop sign-up on the key service (keyservice/).
 
-Run after `source env.sh`. Uses the master key from Parameter Store, like keys.py:
+Run after `source env.sh`. Uses the master key from Parameter Store, like keys.py
+(or LITELLM_URL and LITELLM_MASTER_KEY_FILE, for an organizer without AWS access):
 
   python scripts/workshop.py open --code whale-2026 --max 20 --hours 4
   python scripts/workshop.py status

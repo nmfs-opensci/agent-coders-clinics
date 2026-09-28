@@ -12,7 +12,8 @@ scripts/tunnel.sh running:
   python scripts/keys.py delete alice
 
 The admin (master) key is read from Parameter Store at run time and never
-printed. A new key's value is written only to secrets/<user>.key (mode 600,
+printed. An organizer without AWS access instead sets LITELLM_URL and
+LITELLM_MASTER_KEY_FILE (a file holding the master key, e.g. under secrets/). A new key's value is written only to secrets/<user>.key (mode 600,
 git-ignored) on this machine; create each user's key on the machine that will
 use it, so key values never need copying.
 """
@@ -34,6 +35,8 @@ def gateway_url(stack):
 
 
 def master_key(prefix):
+    if os.environ.get("LITELLM_MASTER_KEY_FILE"):
+        return pathlib.Path(os.environ["LITELLM_MASTER_KEY_FILE"]).expanduser().read_text().strip()
     return boto3.client("ssm").get_parameter(
         Name=f"/{prefix}/master-key", WithDecryption=True
     )["Parameter"]["Value"]
@@ -112,7 +115,8 @@ def delete(gw, args):
 
 
 def main():
-    if "AWS_ROLE_ARN" in os.environ or not os.environ.get("AWS_PROFILE"):
+    no_aws = os.environ.get("LITELLM_URL") and os.environ.get("LITELLM_MASTER_KEY_FILE")
+    if not no_aws and ("AWS_ROLE_ARN" in os.environ or not os.environ.get("AWS_PROFILE")):
         sys.exit("Run `source env.sh` first (in ~/agent-coders-clinics), then try again.")
     ap = argparse.ArgumentParser(description="Manage LiteLLM test keys.")
     ap.add_argument("--url", default=os.environ.get("LITELLM_URL"), help="default: the stack's GatewayUrl")

@@ -36,6 +36,17 @@ Bedrock.
   under a new name (Phase 7); `claude-tester` stays on the test gateway.
 - Workshop defaults: $20 per person, keys last 7 days, up to 20 people.
 
+## Get the code
+
+```bash
+git clone https://github.com/nmfs-opensci/agent-coders-clinics.git
+cd agent-coders-clinics
+```
+
+Work on your own branch (Phase 4). The gateway will later move to its own
+template repository, `nmfs-opensci/litellm-bedrock-gateway`; until then it
+lives here.
+
 ## Read first
 
 1. `README.md`: environment setup.

@@ -29,7 +29,7 @@ python scripts/workshop.py open --code test-whale --max 2 --hours 1
 
 - Type `wrong` first: it should say the code is not right.
 - Run it again and type `test-whale`: it should say
-  `Got your key for eeholmes`, then start Claude Code.
+  `Got your key for <your hub username>`, then start Claude Code.
 - In Claude Code, type `/status`: it should show the gateway URL.
   Quit with `/exit`.
 
@@ -40,13 +40,13 @@ claude-tester --budget
 python scripts/workshop.py status
 ```
 
-`status` should list `ws-eeholmes`. Your own `claude` should still
+`status` should list `ws-<your hub username>`. Your own `claude` should still
 start with your personal account.
 
 ## 5. Clean up
 
 ```bash
-python scripts/keys.py delete ws-eeholmes
+python scripts/keys.py delete ws-<your hub username>
 claude-tester --reset
 python scripts/workshop.py close
 ```

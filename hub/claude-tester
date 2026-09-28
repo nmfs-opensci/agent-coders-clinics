@@ -17,15 +17,23 @@ DIR="$HOME/.config/agent-coders"  # not XDG_CONFIG_HOME: the hub points it at /e
 KEYFILE="$DIR/key"
 
 # So that plain `claude-tester` works from now on. A new hub account has no
-# ~/.bashrc and ~/.local/bin is not on its PATH, so add it there too.
+# startup files and ~/.local/bin is not on its PATH, so add it. Hub terminals
+# are login shells (bash -l), which read the first of these files that exists.
 if [ ! -e "$HOME/.local/bin/claude-tester" ]; then
   mkdir -p "$HOME/.local/bin"
   ln -s "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")" "$HOME/.local/bin/claude-tester"
 fi
-if ! grep -qs 'agent-coders: claude-tester' "$HOME/.bashrc"; then
-  printf '\nexport PATH="$HOME/.local/bin:$PATH"  # agent-coders: claude-tester\n' >> "$HOME/.bashrc"
-  echo "Set up: in new terminals you can just type claude-tester"
-fi
+login_file="$HOME/.profile"
+for f in "$HOME/.bash_profile" "$HOME/.bash_login"; do
+  [ -e "$f" ] && { login_file="$f"; break; }
+done
+for f in "$login_file" "$HOME/.bashrc"; do  # .bashrc: for terminals that are not login shells
+  if ! grep -qs 'agent-coders: claude-tester' "$f"; then
+    printf '\nexport PATH="$HOME/.local/bin:$PATH"  # agent-coders: claude-tester\n' >> "$f"
+    added=1
+  fi
+done
+[ -n "${added:-}" ] && echo "Set up: in new terminals you can just type claude-tester"
 export PATH="$HOME/.local/bin:$PATH"  # where Claude Code installs itself
 
 json() {  # json FIELD < response: print one field of a JSON reply

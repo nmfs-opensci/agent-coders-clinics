@@ -19,16 +19,26 @@ questions: pick a theme and say yes to trusting the folder.
 
 ## After that
 
+Open a **new** terminal (the short name does not work in the terminal
+you used the first time), then:
+
 ```bash
 claude-tester
 ```
 
 Start it in the folder you want to work in, for example `cd ~/my-project`
-first.
+first. The full path, `~/shared/agent-coders/claude-tester`, always works.
+
+## Check your spending
+
+```bash
+claude-tester --budget
+```
+
+It shows what you have spent, your budget and when your key expires.
+Spending shows up about a minute after you use Claude.
 
 ## Useful
-
-- `claude-tester --budget` shows what you have spent.
 - Inside Claude Code: `/model` switches models, for example
   `/model claude-sonnet-4-6`. The default, Haiku, is the cheapest.
 - Your key is yours: it is saved in `~/.config/agent-coders/key`

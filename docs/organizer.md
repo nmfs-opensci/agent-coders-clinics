@@ -28,6 +28,42 @@ and `docs/participant-quickstart.md`.
 
 Gateway URL: `https://18.227.15.211.sslip.io`
 
+## Workshop sign-up on the JupyterHub
+
+People on the hub type `claude-tester`, enter a code you say in the room,
+and get their own key: `ws-<hub username>`, $20, 7 days. The participant
+page is `docs/hub-quickstart.md`.
+
+Once per server (again after a rebuild or a change to `keyservice/`):
+
+```bash
+scripts/keyservice-deploy.sh
+```
+
+It should end with `keyservice: up at https://.../workshop/`.
+Sign-up stays closed until you open it.
+
+When the workshop starts (the code is not case-sensitive):
+
+```bash
+python scripts/workshop.py open --code whale-2026 --max 20 --hours 4
+python scripts/workshop.py status
+python scripts/workshop.py close
+```
+
+`status` lists who has a key. If someone lost their key or took the wrong
+name, delete it and they can sign up again:
+
+```bash
+python scripts/keys.py delete ws-their-username
+```
+
+After changing `hub/claude-tester`, copy it to the shared folder:
+
+```bash
+cp hub/claude-tester ~/shared-readwrite/agent-coders/
+```
+
 ## Watch use and cost
 
 ```bash

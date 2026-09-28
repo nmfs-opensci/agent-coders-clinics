@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# claude-tester: Claude Code through the agent-coders workshop gateway.
+#
+#   ~/shared/agent-coders/claude-tester     first time (then just: claude-tester)
+#   claude-tester --budget                  how much of your budget is left
+#   claude-tester --reset                   forget your saved key
+#
+# The first run asks for the workshop code and gets you a personal key (saved in
+# ~/.config/agent-coders/key, readable only by you). Claude Code runs with its
+# own settings folder, ~/.config/agent-coders/claude, so a personal Claude login
+# and settings in ~/.claude are never used or changed: `claude` stays yours.
+# Kept in the repo at hub/claude-tester; installed to ~/shared-readwrite/agent-coders/.
+set -euo pipefail
+
+GATEWAY_URL=https://18.227.15.211.sslip.io
+DIR="$HOME/.config/agent-coders"  # not XDG_CONFIG_HOME: the hub points it at /etc
+KEYFILE="$DIR/key"
+
+# So that plain `claude-tester` works from now on. A new hub account has no
+# startup files and ~/.local/bin is not on its PATH, so add it. Hub terminals
+# are login shells (bash -l), which read the first of these files that exists.
+if [ ! -e "$HOME/.local/bin/claude-tester" ]; then
+  mkdir -p "$HOME/.local/bin"
+  ln -s "$(cd "$(dirname "$0")" && pwd)/$(basename "$0")" "$HOME/.local/bin/claude-tester"
+fi
+login_file="$HOME/.profile"
+for f in "$HOME/.bash_profile" "$HOME/.bash_login"; do
+  [ -e "$f" ] && { login_file="$f"; break; }
+done
+for f in "$login_file" "$HOME/.bashrc"; do  # .bashrc: for terminals that are not login shells
+  if ! grep -qs 'agent-coders: claude-tester' "$f"; then
+    printf '\nexport PATH="$HOME/.local/bin:$PATH"  # agent-coders: claude-tester\n' >> "$f"
+    added=1
+  fi
+done
+[ -n "${added:-}" ] && echo "Set up: in new terminals you can just type claude-tester"
+export PATH="$HOME/.local/bin:$PATH"  # where Claude Code installs itself
+
+json() {  # json FIELD < response: print one field of a JSON reply
+  python3 -c 'import json,sys; print(json.load(sys.stdin).get(sys.argv[1]) or "")' "$1"
+}
+
+case "${1:-}" in
+  --reset)
+    rm -f "$KEYFILE"; echo "Forgot your key. Ask the organizer before signing up again."; exit 0 ;;
+  --budget)
+    [ -s "$KEYFILE" ] || { echo "No key yet: run claude-tester first."; exit 1; }
+    curl -fsS "$GATEWAY_URL/key/info" -H "Authorization: Bearer $(cat "$KEYFILE")" | python3 -c '
+import json, sys
+i = json.load(sys.stdin)["info"]
+print("Spent $%.2f of $%s; key expires %s UTC." % (i.get("spend") or 0, i.get("max_budget"), (i.get("expires") or "never")[:16]))'
+    exit 0 ;;
+esac
+
+if [ ! -s "$KEYFILE" ]; then
+  user="${JUPYTERHUB_USER:-}"
+  [ -n "$user" ] || read -rp "Your hub username: " user
+  read -rp "Workshop code: " code || { echo; echo "No code entered."; exit 1; }
+  reply=$(curl -sS "$GATEWAY_URL/workshop/key" -H 'Content-Type: application/json' \
+    -d "$(python3 -c 'import json,sys; print(json.dumps({"code": sys.argv[1], "user": sys.argv[2]}))' "$code" "$user")") \
+    || { echo "Could not reach the workshop gateway. Try again, or ask the organizer."; exit 1; }
+  key=$(json key <<<"$reply" 2>/dev/null || true)
+  if [ -z "$key" ]; then
+    echo "$(json error <<<"$reply" 2>/dev/null || echo "Unexpected reply from the gateway.")"
+    exit 1
+  fi
+  mkdir -p "$DIR"
+  (umask 077; printf '%s\n' "$key" > "$KEYFILE")
+  echo "Got your key for $user: \$$(json budget <<<"$reply") to spend, expires $(json expires <<<"$reply" | cut -c1-10)."
+fi
+
+if ! command -v claude >/dev/null; then
+  echo "Installing Claude Code (one time, about a minute)..."
+  curl -fsSL https://claude.ai/install.sh | bash >/dev/null
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# Settings from other ways of running Claude would bypass the gateway.
+unset CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_VERTEX ANTHROPIC_API_KEY \
+      AWS_BEARER_TOKEN_BEDROCK ANTHROPIC_SMALL_FAST_MODEL
+export CLAUDE_CONFIG_DIR="$DIR/claude"
+export ANTHROPIC_BASE_URL="$GATEWAY_URL"
+ANTHROPIC_AUTH_TOKEN="$(tr -d '[:space:]' < "$KEYFILE")"
+export ANTHROPIC_AUTH_TOKEN
+# Claude Code picks models by tier; map every tier to a model the gateway serves.
+export ANTHROPIC_MODEL=claude-haiku-4-5-20251001
+export ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-4-6
+export ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-4-6
+export ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
+exec claude "$@"

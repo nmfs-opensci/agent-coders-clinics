@@ -7,6 +7,20 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
 `AGENTS.md`; `CLAUDE.md` only imports it. `main` has the LiteLLM gateway
 (PR #2, merged 2026-09-25).
 
+## Remind Eli at the start of the next session
+
+Eli asked (2026-09-28) to be reminded of these when coming back:
+
+1. **Delete the test key** `ws-eeholmes-uw` for a clean count before the
+   workshop: `python scripts/keys.py delete ws-eeholmes-uw`.
+2. **Decide on the auto mode line**: add `export
+   CLAUDE_CODE_AUTO_MODE_SERVER=0` to `hub/claude-tester` (then copy it to
+   `~/shared-readwrite/agent-coders/`), so participants do not get the
+   "this session isn't eligible" notice that pauses Claude Code until Enter.
+   Why: comment on issue #9.
+
+Remove this section once both are done.
+
 ## Working on
 
 - **LiteLLM gateway for coding tools on Bedrock** — prototype done (issue #1
@@ -19,14 +33,13 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
   **Claude Code, OpenCode and Copilot CLI** (Aider dropped by Eli). Rich
   Signell's PR #6 (set the key first) merged into it; Eli then rearranged the
   basics section by hand. Issue #5 closed 2026-09-25. Details: `claude/notes/other-coding-tools.md`.
-- **Issue #9, one-step Claude Code on the JupyterHub** (branch
-  `workshop-key-service`, not merged, no PR yet): a key service on the gateway
-  (`/workshop/key`: workshop code + hub username → `ws-<user>` key, $20, 7
-  days, cap 20) and `claude-tester` in `~/shared/agent-coders/`. Deployed to
-  the live gateway and tested end to end 2026-09-28; group test 2026-09-29.
-  Open items and hub gotchas (login shells, no startup files, XDG path,
-  Eli's terminals run as hub account `eeholmes-uw`):
-  `claude/notes/workshop-key-service.md` **on that branch**.
+- **Issue #9, one-step Claude Code on the JupyterHub**: merged (PR #10,
+  2026-09-28); issue still open. A key service on the gateway (`/workshop/key`:
+  workshop code + hub username → `ws-<user>` key, $20, 7 days, cap 20) and
+  `claude-tester` in `~/shared/agent-coders/`. Live and tested end to end;
+  group test 2026-09-29. Details, hub gotchas (login shells, no startup files,
+  XDG path, Eli's terminals run as hub account `eeholmes-uw`) and open items:
+  `claude/notes/workshop-key-service.md`.
 - **Next task Eli named: instructions for a colleague's Claude agent to
   install the gateway in the org AWS account**: step by step; the colleague
   will probably clone nmfs-opensci/agent-skills and maybe agent-skill-clinic.

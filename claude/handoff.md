@@ -19,8 +19,20 @@ Repo for the agent-coders team, Openscapes Champions cohort 2026
   **Claude Code, OpenCode and Copilot CLI** (Aider dropped by Eli). Rich
   Signell's PR #6 (set the key first) merged into it; Eli then rearranged the
   basics section by hand. Issue #5 closed 2026-09-25. Details: `claude/notes/other-coding-tools.md`.
-- **Next open thread: issue #4**: real-work cost test, workshop runbook,
-  colleague feedback.
+- **Issue #9, one-step Claude Code on the JupyterHub** (branch
+  `workshop-key-service`, not merged, no PR yet): a key service on the gateway
+  (`/workshop/key`: workshop code + hub username → `ws-<user>` key, $20, 7
+  days, cap 20) and `claude-tester` in `~/shared/agent-coders/`. Deployed to
+  the live gateway and tested end to end 2026-09-28; group test 2026-09-29.
+  Open items and hub gotchas (login shells, no startup files, XDG path,
+  Eli's terminals run as hub account `eeholmes-uw`):
+  `claude/notes/workshop-key-service.md` **on that branch**.
+- **Next task Eli named: instructions for a colleague's Claude agent to
+  install the gateway in the org AWS account**: step by step; the colleague
+  will probably clone nmfs-opensci/agent-skills and maybe agent-skill-clinic.
+  Start from `claude/notes/aws-setup-lessons.md` §6 (org handover).
+- Issue #4 still open: real-work cost test, workshop runbook, colleague
+  feedback.
 - **AWS lessons** (account kinds, logins, member-account roles, per-account
   Bedrock checklist): `claude/notes/aws-setup-lessons.md`.
 - Reusable-skill proposal from this work: nmfs-opensci/agent-skills#22.

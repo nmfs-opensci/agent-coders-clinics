@@ -92,5 +92,31 @@ their own budget-capped key. No `sk-` strings are handed out.
       `--budget` works, personal `~/.claude` untouched). Found: the hub sets
       `XDG_CONFIG_HOME=/etc/xdg/userconfig`, so the script uses `~/.config`
       directly.
-- [ ] Eli: deploy + end-to-end sign-up test (`docs/hub-signup-test.md`).
-- Docs: `docs/hub-quickstart.md` (participants), section in `docs/organizer.md`.
+- [x] Eli ran `keyservice-deploy.sh` (LiteLLM still healthy after the Caddy
+      change) and signed up end to end from hub account **eeholmes-uw**.
+      Eli's terminals run as `eeholmes-uw`, a different hub account from the
+      `eeholmes` account Claude's sessions run in (visible to Claude under
+      `~/allusers/eeholmes-2duw/`), so that was a fresh-participant test.
+- Fixes found in that test: a new hub account has **no startup files** and
+  `~/.local/bin` is not on the default PATH, and **hub terminals are login
+  shells** (`bash -l`: they read `~/.profile`, not `~/.bashrc`). The script now
+  adds the PATH line to the login file and `.bashrc`, and puts `~/.local/bin`
+  on its own PATH (before, it reinstalled Claude Code on every run).
+- **Auto mode notice** ("this session isn't eligible"; holds the first checked
+  action until Enter): the gateway cannot be made eligible, because
+  server-side review on Bedrock needs Sonnet 5 / Opus 4.7+. Notes on issue #9.
+  Suggested, **not applied, waiting on Eli**: `export
+  CLAUDE_CODE_AUTO_MODE_SERVER=0` in `claude-tester`.
+- Docs: `docs/hub-quickstart.md` (participants), section in
+  `docs/organizer.md`, `docs/hub-signup-test.md`.
+
+## Open items (end of 2026-09-28)
+
+- Test key `ws-eeholmes-uw` still exists (delete it for a clean count);
+  sign-up is open with the test code until 21:27 UTC, then ends on its own.
+- Decide on `CLAUDE_CODE_AUTO_MODE_SERVER=0`; if yes, edit `hub/claude-tester`
+  and copy it to `~/shared-readwrite/agent-coders/`.
+- Workshop 2026-09-29: `workshop.py open --code <code> --max 20 --hours 4`.
+- PR for branch `workshop-key-service` not opened yet.
+- Not tested: a first interactive start answering the onboarding questions
+  (the participant page guesses at them).

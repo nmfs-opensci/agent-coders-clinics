@@ -7,7 +7,7 @@ one phase at a time."*
 
 What gets built: one CloudFormation stack with a small EC2 instance running
 LiteLLM, Postgres and Caddy (HTTPS), plus the workshop key service. People on
-the JupyterHub type `claude-tester`, enter a workshop code, and Claude Code runs
+the JupyterHub type the workshop script's name (Phase 7), enter a workshop code, and Claude Code runs
 through the gateway with their own key, budget and expiry. Nobody but the
 installer has AWS access; the instance's role is the only thing that calls
 Bedrock.
@@ -20,8 +20,8 @@ Bedrock.
   not get any.** Needs, from the installer: the gateway URL, the gateway's
   master key, and the Admin UI password (Phase 8). With those, the organizer
   creates, blocks and deletes keys, opens and closes sign-up, and watches
-  spend. The organizer is also a JupyterHub admin and installs `claude-tester`
-  on the hub.
+  spend. The organizer is also a JupyterHub admin and installs the workshop
+  script on the hub.
 
 ## What is already known (from Eli, 2026-09-28)
 
@@ -32,7 +32,8 @@ Bedrock.
 - **Bedrock has never been used** in this account, so every item of the
   per-account checklist (Phase 3) applies.
 - No domain name: the gateway will be `https://<elastic ip>.sslip.io`.
-- The **JupyterHub sign-up** (`claude-tester`, key service) is wanted.
+- The **JupyterHub sign-up** (key service) is wanted, with its own hub script
+  under a new name (Phase 7); `claude-tester` stays on the test gateway.
 - Workshop defaults: $20 per person, keys last 7 days, up to 20 people.
 
 ## Read first
@@ -199,17 +200,31 @@ after `scripts/teardown.sh`. Get an explicit yes.
 
 The organizer does the hub side; the agent prepares it.
 
-1. Make a copy of `hub/claude-tester` with `GATEWAY_URL` set to the new URL,
-   and commit it on the branch.
-2. **Ask the organizer** how to roll it out on the hub. The shared
-   `claude-tester` points at one gateway: replacing it moves everyone to the
-   org gateway, and anyone holding a key from the old gateway must run
-   `claude-tester --reset` and sign up again. A second script under another
-   name avoids that.
-3. After the organizer installs it: they run
+**Decided (Eli, 2026-09-28):** the production gateway gets its **own script
+under a new name**, alongside `claude-tester`, which stays pointed at the
+test gateway. Ask the organizer for the name; `<script>` below.
+
+1. Copy `hub/claude-tester` to `hub/<script>` and change, in the copy:
+   - `GATEWAY_URL` to the new gateway URL;
+   - `DIR` to its own folder, e.g. `$HOME/.config/agent-coders-<script>`.
+     **Required:** the key file lives there, and a shared folder would hand
+     a test-gateway key to the org gateway (it would be refused);
+   - the link it makes in `~/.local/bin` (`claude-tester` → `<script>`);
+   - the marker comment it looks for in startup files, and every message and
+     usage line that says `claude-tester`.
+2. Test it in a throwaway home (`HOME=$(mktemp -d) hub/<script> --budget`
+   should say there is no key yet, and must not touch `~/.config/agent-coders`).
+   Commit it on the branch.
+3. The organizer copies it to `~/shared-readwrite/agent-coders/` on the hub
+   (participants run it once as `~/shared/agent-coders/<script>`, then just
+   `<script>`).
+4. End-to-end test with the organizer: they run
    `python scripts/workshop.py open --code <code> --max 2 --hours 1` (Phase 8
-   setup), sign up from a hub account with `claude-tester`, check
-   `claude-tester --budget`, then close sign-up and delete the test key.
+   setup), sign up from a hub account with `<script>`, check `<script> --budget`,
+   check `claude-tester` still reaches the test gateway, then close sign-up
+   and delete the test key.
+5. Participant instructions: a copy of `docs/hub-quickstart.md` for the new
+   name and URL.
 
 ## Phase 8: hand over to the organizer (who has no AWS access)
 
@@ -231,8 +246,7 @@ The organizer does the hub side; the agent prepares it.
    change the served models, teardown, and replace a leaked master key.
    Agree on how the organizer reaches the installer before a workshop.
 4. Replace the author's URL in the installer's copies of
-   `docs/participant-quickstart.md`, `docs/hub-quickstart.md` and
-   `docs/organizer.md`.
+   `docs/participant-quickstart.md` and `docs/organizer.md`.
 5. Finish `claude/notes/org-install.md`: account, Region, stack, URL, what an
    admin had to do, anything that differed from this plan.
 6. Offer a pull request with changes that help the next install (fixes to

@@ -15,3 +15,4 @@ aws cloudformation deploy \
 aws cloudformation describe-stacks --stack-name "$STACK" \
   --query 'Stacks[0].Outputs' --output table
 echo "First boot installs Docker and starts LiteLLM; allow ~3 minutes before scripts/tunnel.sh."
+echo "Then, for workshop sign-up: scripts/keyservice-deploy.sh"

@@ -334,9 +334,16 @@ Resources:
 
             # HTTPS in front of LiteLLM. Caddy gets and renews the certificate itself;
             # the Elastic IP may attach a few seconds after boot, and Caddy retries.
+            # /workshop/* goes to the workshop key service, which is installed after
+            # boot by scripts/keyservice-deploy.sh (until then it answers 502).
             cat > Caddyfile <<'CADDY'
             ${Hostname} {
-            	reverse_proxy litellm:4000
+            	handle /workshop/* {
+            		reverse_proxy keyservice:8080
+            	}
+            	handle {
+            		reverse_proxy litellm:4000
+            	}
             }
             CADDY
             mkdir -p /opt/litellm/caddy

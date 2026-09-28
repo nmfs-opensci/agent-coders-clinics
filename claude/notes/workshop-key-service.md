@@ -74,18 +74,23 @@ their own budget-capped key. No `sk-` strings are handed out.
 - Check in testing: with a personal login present in `~/.claude/`, both
   `claude` (personal) and `claude-tester` (gateway, `/status`) work afterwards.
 
-## Steps (one per sitting)
+## Status (2026-09-28)
 
-1. [ ] `keyservice` script + local test against LiteLLM through `scripts/tunnel.sh`.
-2. [ ] Deploy to the running instance over SSM (container, Caddy route, env
-       file); `scripts/workshop.py`; update the template; `cfn-lint`.
-3. [ ] `claude-tester` in the repo; copy to `~/shared-readwrite/agent-coders/`.
-4. [ ] End-to-end test as `eeholmes` with `MAX_KEYS=2`: wrong code, first key,
-       repeat (409), cap reached, closed window; delete the `ws-` test keys.
-       Ideally one run from a second, non-admin hub account.
-5. [ ] Participant page (`docs/`, short lines) and organizer steps in `docs/organizer.md`.
-
-## Open questions
-
-- None blocking. Because the test is tomorrow, steps 1–4 may need to run in
-  one sitting.
+- [x] `keyservice/keyservice.py`, tested locally against the live LiteLLM:
+      closed, wrong code, bad name, issue, repeat (409), cap, ended. Log holds
+      no keys or codes. Admin endpoint (`/workshop/admin`, master key) replaced
+      the SSM-written settings file in the plan: `scripts/workshop.py` calls
+      it like `keys.py` does.
+- [x] `scripts/keyservice-deploy.sh` written (SSM run-command; Caddyfile is
+      rewritten in place because it is a single-file bind mount). **Not run:
+      Claude's auto mode refused to run it against the live server, so Eli
+      runs it** (`docs/hub-signup-test.md`).
+- [x] Template: Caddy `/workshop/*` route; `cfn-lint` clean. The service code
+      is not in user data; after a rebuild, run `keyservice-deploy.sh`.
+- [x] `hub/claude-tester`, copied to `~/shared-readwrite/agent-coders/`.
+      Launch tested with a throwaway key in a fake home (Claude answered,
+      `--budget` works, personal `~/.claude` untouched). Found: the hub sets
+      `XDG_CONFIG_HOME=/etc/xdg/userconfig`, so the script uses `~/.config`
+      directly.
+- [ ] Eli: deploy + end-to-end sign-up test (`docs/hub-signup-test.md`).
+- Docs: `docs/hub-quickstart.md` (participants), section in `docs/organizer.md`.

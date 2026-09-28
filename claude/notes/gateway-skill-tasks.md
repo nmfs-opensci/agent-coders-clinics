@@ -49,10 +49,19 @@ instructions shrink to "use the skill, here are our answers" (C).
    (`LITELLM_URL` + `LITELLM_MASTER_KEY_FILE`, tested against the live
    gateway with AWS disabled); use the skill's `GATEWAY_*` naming. Carry over
    `docs/organizer-no-aws.md` as a reference page.
-3. Hub gotchas to keep (from `workshop-key-service.md`): login shells, no
+3. **The skill writes each install's docs.** This repo's `docs/` is going
+   away (with the test gateway, after this week), so every install gets its
+   own copies, filled in with its gateway URL, hub script name, models,
+   budget and organizer: participant quickstart (the skill already renders
+   one), hub quickstart for the sign-up script, organizer guide, and the
+   organizer-without-AWS page. Templates live in the skill's `assets/`,
+   rendered by `render.py` into the deployment folder (the install's repo).
+   Source material: `docs/participant-quickstart.md`, `docs/hub-quickstart.md`,
+   `docs/organizer.md` here and `docs/organizer-no-aws.md` on PR #11's branch.
+4. Hub gotchas to keep (from `workshop-key-service.md`): login shells, no
    startup files on new accounts, `XDG_CONFIG_HOME=/etc/xdg/userconfig`,
    own `CLAUDE_CONFIG_DIR` so a personal Claude login is untouched.
-4. Test in a throwaway stack (skill note: distinct `GATEWAY_STACK`, never
+5. Test in a throwaway stack (skill note: distinct `GATEWAY_STACK`, never
    `litellm-smoke`), tear it down. Ask before creating it (costs money).
 
 ## Task B: template repo `nmfs-opensci/litellm-bedrock-gateway`
@@ -74,8 +83,9 @@ before anything billed, hand Eli the three items privately. Then decide PR
 
 ## Other threads from the same session
 
-- Eli's test gateway (Greenfield, `litellm-smoke`): torn down about a week
-  after the production one works. After the 2026-09-29 workshop Eli may make
+- **This repo's gateway work ends after this week**: the test gateway
+  (Greenfield, `litellm-smoke`) is torn down and `docs/` is removed; from then
+  on gateways are made with the skill, each in its own repo from the template. After the 2026-09-29 workshop Eli may make
   a repo from the template for a tester; no need to migrate the current one.
 - Personal vs org skills: keep `nmfs-opensci/agent-skills` org-only; personal
   skills could live in `~/claude-config` (`claude/skills/`, linked by

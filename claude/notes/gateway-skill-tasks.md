@@ -34,10 +34,12 @@ instructions shrink to "use the skill, here are our answers" (C).
   A shared key folder would hand test-gateway keys to the org gateway.
 - **Eli has no AWS access to the org account and will not get any.** Eli runs
   the workshop (open/close sign-up, create/block/delete keys, watch spend)
-  from the gateway URL + master key + Admin UI password, sent privately by the
-  installer. Installer keeps: start/stop, rebuild, models, key rotation,
+  from the gateway URL + **their own organizer key** (`keys.py organizer
+  create`, revocable), sent privately by the installer. Not the master key or
+  the Admin UI password: neither can be revoked (agent-skills #27, 2026-09-28). Installer keeps: start/stop, rebuild, models, key rotation,
   teardown.
-- Workshop defaults: $20 per person, 7 days, up to 20 people.
+- First workshop planned at $20 per person, 7 days, up to 20 people. These are
+  per workshop, not gateway settings (agent-skills #29).
 
 ## Task A: add to the skill (PR in agent-skills)
 
@@ -83,6 +85,11 @@ install's record. Rejected for now: moving the code into the template and
 thinning the skill (option 2); revisit if the code outgrows the skill.
 
 ## Task C: the colleague's instructions, minimal
+
+**Done 2026-09-29**: PR #11 trimmed to `docs/org-install-plan.md` only (the
+`keys.py`/`workshop.py` master-key-from-file changes and
+`docs/organizer-no-aws.md` dropped, superseded by the skill). Open, awaiting
+Eli. The original plan for it:
 
 Rewrite `docs/org-install-plan.md` as short instructions: make the org's repo
 from the template, install the skill, give the agent the facts above, stop

@@ -36,20 +36,19 @@ into `claude-tester`, which is being retired.)
   group test 2026-09-29. Details, hub gotchas (login shells, no startup files,
   XDG path, Eli's terminals run as hub account `eeholmes-uw`) and open items:
   `claude/notes/workshop-key-service.md`.
-- **Next: tasks A → #27 → B → C, in order, clear between each** (decided
-  2026-09-28). **A is done**: agent-skills PR #26, merged 2026-09-28. **Next is
-  agent-skills issue #27** (an organizer key instead of the master key), worked
-  in `~/agent-skills` on branch `issue-27-organizer-key`; see that repo's handoff. A: add workshop sign-up and key management without AWS to the
-  `litellm-bedrock-gateway` skill in `nmfs-opensci/agent-skills` (the skill,
-  not this repo, is the installer). B: sparse public template repo
-  `nmfs-opensci/litellm-bedrock-gateway`. C: minimal instructions for the
-  colleague installing in the org account (us-west-2, Eli has no AWS access
-  there). Facts, design constraints, and what each task covers:
-  `claude/notes/gateway-skill-tasks.md`.
-- **PR #11 open, not merged** (branch `org-install-plan`): a long install plan
-  from this repo's scripts (superseded by A–C), plus `keys.py`/`workshop.py`
-  reading the master key from a file (tested) and `docs/organizer-no-aws.md`.
-  Trim or close it in task C.
+- **Gateway tasks A → #27 → B → C are done** (2026-09-28/29). A: agent-skills
+  PR #26; #27: organizer keys, PR #28; B: the template
+  `nmfs-opensci/litellm-gateway-template` (its notes live in agent-skills,
+  `claude/notes/litellm-gateway-template.md`); plus agent-skills #29 (PR #32),
+  gateway setup split from adding a workshop. C: **PR #11 trimmed** to
+  `docs/org-install-plan.md` only, short instructions: template + skill, the
+  answers for this install, and hand Eli the URL and a revocable **organizer
+  key** (never the master key or UI password). Open, not merged; waiting on
+  Eli. Eli is trying the template for a real install (2026-09-29). Plan and
+  facts: `claude/notes/gateway-skill-tasks.md`.
+- **Next task, after 2026-09-30: clean up this repo** (Eli, 2026-09-29). Its
+  gateway code and `docs/` are superseded by the skill and the template; what
+  stays is for Eli to decide then. Do not start it before.
 - Issue #4 still open: real-work cost test, workshop runbook, colleague
   feedback.
 - **AWS lessons** (account kinds, logins, member-account roles, per-account

@@ -1,16 +1,19 @@
 # AGENTS.md
 
-This file provides guidance to AI coding agents (Claude Code, Codex, Cursor,
-Copilot, Gemini CLI, and others) when working with code in this repository.
+This file provides guidance to AI coding agents (Claude Code, Antigravity,
+Codex, Cursor, Copilot, and others) when working with code in this repository.
+`CLAUDE.md` contains only `@AGENTS.md`, so Claude Code reads this file too;
+edit `AGENTS.md`, not `CLAUDE.md`.
 
 ## What this repository is
 
 Repo for the agent-coders team in the Openscapes Champions cohort 2026
 (`nmfs-opensci/agent-coders-clinics` on GitHub).
 
-Current work is issue #1, a LiteLLM gateway for Claude Code on Amazon Bedrock.
-Read `claude/handoff.md` first, then `claude/notes/litellm-gateway.md`, which
-records the decisions, environment gotchas, and phase checklist.
+Read `claude/handoff.md` first for the current state of work. The LiteLLM
+gateway for Claude Code on Amazon Bedrock (issue #1, merged in PR #2) is
+described in `claude/notes/litellm-gateway.md`, which records the decisions,
+environment gotchas, and phase checklist.
 
 ## Environment
 

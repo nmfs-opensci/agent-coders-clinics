@@ -34,7 +34,10 @@ into `claude-tester`, which is being retired.)
   user. Installs agy, adds the team allowlist (R-heavy) and a guard against
   destructive commands to each user's agy settings on every start. Why it has to
   work this way, and what is deliberate: `claude/notes/agy-launcher.md`.
-  Participant instructions are nmfs-opensci/agent-coders issue #12.
+  PR #14 (2026-10-03, installed): start mode is the `agentMode` key; the
+  `defaultMode` it wrote first is ignored by agy, so the launcher now removes it.
+  Participant instructions: nmfs-opensci/agent-coders issue #12, merged as that
+  repo's PR #14.
 - **Issue #9, one-step Claude Code on the JupyterHub**: merged (PR #10,
   2026-09-28); issue still open. A key service on the gateway (`/workshop/key`:
   workshop code + hub username → `ws-<user>` key, $20, 7 days, cap 20) and

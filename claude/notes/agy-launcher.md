@@ -29,8 +29,9 @@ as a new hub user on 2026-10-03, Google sign-in included: works.
 - **R, Rscript, quarto, python are allowed** although they run arbitrary code: the
   team is mostly R users and the work needs them. Copy/move/delete, `pip` and
   everything else still ask.
-- **Only adds.** Keeps the user's keys, rules and hooks, including a `defaultMode`
-  they chose; atomic writes; first change leaves `.before-agent-coders` copies;
+- **Only adds.** Keeps the user's keys, rules and hooks, including an `agentMode`
+  they chose (agy's startup mode; it ignores `defaultMode`, which earlier
+  versions wrote and the launcher now removes); atomic writes; first change leaves `.before-agent-coders` copies;
   a symlinked hooks file (Eli's, into claude-config) is left alone.
 - **The guard stands alone.** Eli's personal guard in `eeholmes/claude-config`
   (`common/hooks/deny-destructive-git.py`) is similar but personalized (it allows

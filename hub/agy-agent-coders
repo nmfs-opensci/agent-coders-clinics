@@ -167,9 +167,12 @@ else:
         allow = perms["allow"] = []
     new = [r for r in ("command(%s)" % c for c in RULES) if r not in allow]
     allow.extend(new)
-    mode = "defaultMode" not in settings
+    mode = "agentMode" not in settings
     if mode:  # agy edits files in your project without asking
-        settings["defaultMode"] = "accept-edits"
+        settings["agentMode"] = "accept-edits"
+    if "defaultMode" in settings:  # earlier versions wrote this; agy ignores it
+        del settings["defaultMode"]
+        mode = True
     if new or mode:
         save(path, settings)
     if new:
@@ -197,7 +200,7 @@ if [ "${1:-}" = "--check" ]; then
 import json, os
 s = json.load(open(os.path.expanduser("~/.gemini/antigravity-cli/settings.json")))
 print("Runs without asking:", ", ".join(r[8:-1] for r in s["permissions"]["allow"] if r.startswith("command(")))
-print("Mode:", s.get("defaultMode"))'
+print("Mode:", s.get("agentMode", "default"))'
   exit 0
 fi
 

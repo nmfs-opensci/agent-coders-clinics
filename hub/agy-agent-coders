@@ -7,8 +7,10 @@
 # Out of the box agy asks before every command, so it can barely work. This adds
 # the team's list of everyday commands to your agy settings so they run without
 # asking, and a guard that blocks destructive ones (git reset --hard, force
-# push, git clean -f, rm -r outside your project folder). Anything else still
-# asks you first. It installs agy if you don't have it; the first start asks you
+# push, git clean -f, rm -r outside your project folder, pushing to main,
+# deleting a repository). Merging a PR, deleting a branch, closing an issue and
+# opening a PR in someone else's repo make the agent stop and ask you first.
+# Anything else not on the list still asks you first. It installs agy if you don't have it; the first start asks you
 # to sign in with your Google account.
 #
 # It runs every time you start agy this way, so changes to the team list reach
@@ -22,11 +24,145 @@ SELF="$(readlink -f "$0")"
 # --- the guard: agy runs `agy-agent-coders --hook` before each shell command --------
 if [ "${1:-}" = "--hook" ]; then
   exec python3 -c '
-import json, os, re, shlex, sys
+import json, os, re, shlex, subprocess, sys
 
 def deny(reason):
     print(json.dumps({"decision": "deny", "reason": reason}))
     sys.exit(0)
+
+def git_out(cwd, *args):
+    try:
+        return subprocess.run(["git", "-C", cwd] + list(args), capture_output=True,
+                              text=True, timeout=5).stdout.strip()
+    except Exception:
+        return ""
+
+def protected(cwd):  # main, master, and whatever the remote calls its default branch
+    names = {"main", "master"}
+    head = git_out(cwd, "symbolic-ref", "--short", "refs/remotes/origin/HEAD")
+    if "/" in head:
+        names.add(head.split("/", 1)[1])
+    return names
+
+def no_main(branch):
+    deny("agent-coders guard: no pushing to `" + branch + "`. Commit on a branch, push "
+         "that, and open a pull request. If the user wants it on " + branch + " directly, "
+         "they push it themselves.")
+
+NO_REPO_DELETE = ("agent-coders guard: agents may not delete repositories. The rules "
+                  "require that the user deletes a repository themselves.")
+asks = []  # actions that need the user to say yes first
+
+def check_git(words, cwd):
+    i = 1
+    while i < len(words):  # git options before the subcommand
+        if words[i] in ("-C", "-c", "--git-dir", "--work-tree") and i + 1 < len(words):
+            if words[i] == "-C":
+                cwd = os.path.join(cwd, os.path.expanduser(words[i + 1]))
+            i += 2
+        elif words[i].startswith("-"):
+            i += 1
+        else:
+            break
+    if i >= len(words):
+        return
+    sub, rest = words[i], words[i + 1:]
+    if sub == "branch":
+        if any(re.match(r"^-[a-zA-Z]*[dD][a-zA-Z]*$", w) or w == "--delete" for w in rest):
+            asks.append("This deletes a branch. Suggest it; delete it only when the user says so.")
+        return
+    if sub != "push":
+        return
+    pos, delete, j = [], False, 0
+    while j < len(rest):
+        w = rest[j]
+        if w in ("--repo", "-o", "--push-option", "--receive-pack", "--exec"):
+            j += 2
+            continue
+        if w in ("--all", "--mirror", "--branches"):
+            deny("agent-coders guard: `git push " + w + "` would push the main branch too. "
+                 "Push the one branch you mean.")
+        if w in ("-d", "--delete"):
+            delete = True
+        elif not w.startswith("-"):
+            pos.append(w)
+        j += 1
+    keep = protected(cwd)
+    current = git_out(cwd, "rev-parse", "--abbrev-ref", "HEAD")
+    if not pos[1:]:
+        if not delete:
+            target = git_out(cwd, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{push}")
+            target = target.split("/", 1)[1] if "/" in target else current
+            if target in keep:
+                no_main(target)
+        return
+    for spec in pos[1:]:
+        spec = spec.lstrip("+")
+        if delete:
+            src, dst = "", spec
+        elif ":" in spec:
+            src, dst = spec.split(":", 1)
+            if not src and not dst:
+                deny("agent-coders guard: `git push <remote> :` pushes every matching "
+                     "branch, the main branch included.")
+        else:
+            src, dst = spec, spec
+        if dst in ("HEAD", "@"):
+            dst = current
+        dst = re.sub(r"^refs/heads/", "", dst)
+        if dst in keep:
+            no_main(dst)
+        if not src and not dst.startswith("refs/tags/"):
+            asks.append("This deletes the branch `" + dst + "` on GitHub. Suggest it; delete "
+                        "it only when the user says so.")
+
+def gh_json(cwd, *args):
+    try:
+        return json.loads(subprocess.run(["gh"] + list(args), cwd=cwd, capture_output=True,
+                                         text=True, timeout=8).stdout)
+    except Exception:
+        return {}
+
+def check_gh(words, seg, cwd):
+    args = [w for w in words[1:] if not w.startswith("-")]
+    cmd = " ".join(args[:2])
+    if cmd == "repo delete":
+        deny(NO_REPO_DELETE)
+    if cmd == "repo sync":
+        deny("agent-coders guard: `gh repo sync` pushes to the main branch of a fork. "
+             "The user runs it themselves.")
+    if cmd == "pr merge":
+        asks.append("This merges a pull request. Only merge when the user explicitly said "
+                    "to. Say which repo and PR and summarize the changes, then ask: OK to merge?")
+    if cmd == "pr close" and re.search(r"(?:^|\s)(-d|--delete-branch)\b", seg):
+        asks.append("This deletes the PR branch. Suggest it; delete it only when the user says so.")
+    if cmd == "issue close":
+        asks.append("This closes an issue. Suggest it; close it only when the user says so.")
+    if cmd == "pr create":
+        owner = None
+        for k, w in enumerate(words):
+            if w in ("-R", "--repo") and k + 1 < len(words) and "/" in words[k + 1]:
+                owner = words[k + 1].split("/")[-2]
+            elif w.startswith("--repo=") and "/" in w:
+                owner = w.split("=", 1)[1].split("/")[-2]
+        if owner is None:
+            info = gh_json(cwd, "repo", "view", "--json", "owner,parent")
+            parent = info.get("parent") or {}
+            owner = (parent.get("owner") or {}).get("login") or (info.get("owner") or {}).get("login")
+        me = gh_json(cwd, "api", "user").get("login")
+        if not owner or owner != me:
+            asks.append("This opens a pull request in a repository owned by " + str(owner) +
+                        ", not by the user. Say where it is going and ask first.")
+    if args[:1] == ["api"]:
+        m = re.search(r"(?:^|\s)(?:-X|--method)[=\s]*([A-Za-z]+)", seg)
+        method = (m.group(1) if m else "GET").upper()
+        path = next((a for a in args[1:] if "/" in a), "").lstrip("/")
+        if method == "DELETE" and re.fullmatch(r"repos/[^/\s]+/[^/\s]+/?", path) \
+                or re.search(r"\bdeleteRepository\b", seg):
+            deny(NO_REPO_DELETE)
+        ref = re.search(r"/git/refs/heads/([^\s?]+)", "/" + path)
+        if ref and method in ("PATCH", "POST", "PUT", "DELETE") and ref.group(1) in protected(cwd):
+            no_main(ref.group(1))
 
 try:
     data = json.load(sys.stdin)
@@ -40,6 +176,7 @@ cwd = (call.get("args") or {}).get("Cwd") or ""
 home = os.path.expanduser("~")
 roots = [os.path.realpath(p.replace("file://", "")) for p in data.get("workspacePaths") or []]
 base = cwd or (roots[0] if roots else os.getcwd())
+confirmed = False
 
 for seg in re.split(r"[;&|\n]+", command):
     seg = seg.strip()
@@ -56,13 +193,19 @@ for seg in re.split(r"[;&|\n]+", command):
     except ValueError:
         continue
     while words and re.match(r"^\w+=", words[0]):  # skip VAR=value prefixes
+        confirmed = confirmed or words[0] == "USER_CONFIRMED=1"
         words = words[1:]
     if words and words[0] in ("sudo", "command", "env"):
         words = words[1:]
     if len(words) == 2 and words[0] == "cd":  # cd dir && rm -r x: x is relative to dir
         base = os.path.join(base, os.path.expanduser(words[1].replace("$HOME", home)))
         continue
-    if not words or os.path.basename(words[0]) != "rm":
+    prog = os.path.basename(words[0]) if words else ""
+    if prog == "git":
+        check_git(words, base)
+    elif prog == "gh":
+        check_gh(words, seg, base)
+    if prog != "rm":
         continue
     flags = [w for w in words[1:] if w.startswith("-")]
     if not any(re.match(r"^-[a-zA-Z]*[rR]", f) or f == "--recursive" for f in flags):
@@ -73,6 +216,14 @@ for seg in re.split(r"[;&|\n]+", command):
         p = os.path.realpath(os.path.join(base, os.path.expanduser(t.replace("$HOME", home))))
         if not any(p.startswith(r + os.sep) for r in roots):
             deny("agent-coders guard: `rm -r` outside your project folder (" + p + ") is not allowed.")
+
+# A deny anywhere in the command wins, so asks are answered only after every part passed.
+# agy hooks cannot ask, only deny: the agent has to stop, ask the user, and rerun with
+# USER_CONFIRMED=1 once they said yes.
+if asks and not confirmed:
+    deny("agent-coders guard: needs the user to say yes first. " + " ".join(asks) +
+         " Do not retry yet: tell the user what this will do and ask. Only once they say "
+         "yes, rerun it as `USER_CONFIRMED=1 <command>`. Never add that on your own.")
 '
 fi
 

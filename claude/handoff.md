@@ -32,8 +32,11 @@ into `claude-tester`, which is being retired.)
 - **`agy-agent-coders`, Antigravity for the team on the hub**: merged (PR #13,
   2026-10-03) and installed to `~/shared/agent-coders/`; Eli tested it as a new
   user. Installs agy, adds the team allowlist (R-heavy) and a guard against
-  destructive commands to each user's agy settings on every start. Why it has to
-  work this way, and what is deliberate: `claude/notes/agy-launcher.md`.
+  destructive commands to each user's agy settings on every start. Since
+  2026-10-03 the guard also blocks pushes to main and repo deletion, and makes
+  the agent ask before merges, branch deletes, issue closes and PRs into other
+  people's repos. Why it has to work this way, and what is deliberate:
+  `claude/notes/agy-launcher.md`.
   PR #14 (2026-10-03, installed): start mode is the `agentMode` key; the
   `defaultMode` it wrote first is ignored by agy, so the launcher now removes it.
   Participant instructions: nmfs-opensci/agent-coders issue #12, merged as that

@@ -38,6 +38,19 @@ as a new hub user on 2026-10-03, Google sign-in included: works.
   `rm -r` in the temp dir and follows `VAR=` assignments; the team one refuses
   variable paths). Do not merge them; when Eli's changes, she is asked whether to
   carry the change here. Kept as is on 2026-10-03.
+- **GitHub rules carried over from Eli's guard (2026-10-03)**, because `gh auth
+  login` lets the agent act on GitHub as the person. Denied: pushing to `main`,
+  `master` or the remote's default branch (any form, `--all`/`--mirror`,
+  `gh repo sync`, moving the ref with `gh api`), and deleting a repository. "Ask
+  first": `gh pr merge`, deleting a branch (`git branch -d/-D`, `git push --delete`
+  or `:name`, `--delete-branch`), `gh issue close`, and `gh pr create` into a repo
+  the person's `gh` login does not own (or a fork's parent). agy hooks cannot ask, so
+  those are denied with a reason telling the agent to ask, then let through on a
+  rerun as `USER_CONFIRMED=1 <command>`. agy strips that prefix before matching
+  allow rules, so for `git` (allowed) it is only a stop-and-ask the agent honours;
+  `gh pr merge`, `gh issue close` and `gh api` are not on the team list, so agy's
+  own prompt still follows. The `gh api` merge/close/branch-delete forms are left
+  to that prompt rather than the guard.
 
 ## Open
 

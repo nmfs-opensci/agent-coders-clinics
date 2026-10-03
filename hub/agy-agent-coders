@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+# agy-agent-coders: the Antigravity CLI (agy) with the agent-coders team's permissions.
+#
+#   ~/shared/agent-coders/agy-agent-coders     first time (then just: agy-agent-coders)
+#   agy-agent-coders --check                   show what it set up, without starting agy
+#
+# Out of the box agy asks before every command, so it can barely work. This adds
+# the team's list of everyday commands to your agy settings so they run without
+# asking, and a guard that blocks destructive ones (git reset --hard, force
+# push, git clean -f, rm -r outside your project folder). Anything else still
+# asks you first. It installs agy if you don't have it; the first start asks you
+# to sign in with your Google account.
+#
+# It runs every time you start agy this way, so changes to the team list reach
+# you at your next start. It only ever adds: your own agy settings, rules and
+# hooks are kept. Plain `agy` keeps working, with whatever this last set up.
+# Kept in the repo at hub/agy-agent-coders; installed to ~/shared-readwrite/agent-coders/.
+set -euo pipefail
+
+SELF="$(readlink -f "$0")"
+
+# --- the guard: agy runs `agy-agent-coders --hook` before each shell command --------
+if [ "${1:-}" = "--hook" ]; then
+  exec python3 -c '
+import json, os, re, shlex, sys
+
+def deny(reason):
+    print(json.dumps({"decision": "deny", "reason": reason}))
+    sys.exit(0)
+
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)  # never wedge agy on bad input; normal prompts still apply
+call = data.get("toolCall") or {}
+if call.get("name") != "run_command":
+    sys.exit(0)
+command = (call.get("args") or {}).get("CommandLine") or ""
+cwd = (call.get("args") or {}).get("Cwd") or ""
+home = os.path.expanduser("~")
+roots = [os.path.realpath(p.replace("file://", "")) for p in data.get("workspacePaths") or []]
+base = cwd or (roots[0] if roots else os.getcwd())
+
+for seg in re.split(r"[;&|\n]+", command):
+    seg = seg.strip()
+    if re.search(r"\bgit\b", seg):
+        if re.search(r"\breset\b", seg) and re.search(r"--hard\b", seg):
+            deny("agent-coders guard: `git reset --hard` throws away work. Use git stash or a soft reset.")
+        if re.search(r"\bpush\b", seg) and not re.search(r"--force-with-lease\b", seg) \
+                and (re.search(r"--force\b", seg) or re.search(r"(?:^|\s)-[a-zA-Z]*f[a-zA-Z]*\b", seg)):
+            deny("agent-coders guard: force push rewrites shared history. Use --force-with-lease if you must.")
+        if re.search(r"\bclean\b", seg) and re.search(r"(?:^|\s)(-[a-zA-Z]*f[a-zA-Z]*|--force)\b", seg):
+            deny("agent-coders guard: `git clean -f` deletes untracked files for good.")
+    try:
+        words = shlex.split(seg)
+    except ValueError:
+        continue
+    while words and re.match(r"^\w+=", words[0]):  # skip VAR=value prefixes
+        words = words[1:]
+    if words and words[0] in ("sudo", "command", "env"):
+        words = words[1:]
+    if len(words) == 2 and words[0] == "cd":  # cd dir && rm -r x: x is relative to dir
+        base = os.path.join(base, os.path.expanduser(words[1].replace("$HOME", home)))
+        continue
+    if not words or os.path.basename(words[0]) != "rm":
+        continue
+    flags = [w for w in words[1:] if w.startswith("-")]
+    if not any(re.match(r"^-[a-zA-Z]*[rR]", f) or f == "--recursive" for f in flags):
+        continue  # plain rm of files: agy asks you first, as usual
+    for t in (w for w in words[1:] if not w.startswith("-")):
+        if re.search(r"[$`]", t.replace("$HOME", home)):
+            deny("agent-coders guard: `rm -r` on a path built from a variable; spell out the path.")
+        p = os.path.realpath(os.path.join(base, os.path.expanduser(t.replace("$HOME", home))))
+        if not any(p.startswith(r + os.sep) for r in roots):
+            deny("agent-coders guard: `rm -r` outside your project folder (" + p + ") is not allowed.")
+'
+fi
+
+# So that plain `agy-agent-coders` works from now on. A new hub account has no
+# startup files and ~/.local/bin is not on its PATH, so add it. Hub terminals
+# are login shells (bash -l), which read the first of these files that exists.
+if [ ! -e "$HOME/.local/bin/agy-agent-coders" ]; then
+  mkdir -p "$HOME/.local/bin"
+  ln -s "$SELF" "$HOME/.local/bin/agy-agent-coders"
+fi
+login_file="$HOME/.profile"
+for f in "$HOME/.bash_profile" "$HOME/.bash_login"; do
+  [ -e "$f" ] && { login_file="$f"; break; }
+done
+for f in "$login_file" "$HOME/.bashrc"; do  # .bashrc: for terminals that are not login shells
+  if ! grep -qs 'agent-coders: agy-agent-coders' "$f"; then
+    printf '\nexport PATH="$HOME/.local/bin:$PATH"  # agent-coders: agy-agent-coders\n' >> "$f"
+    added=1
+  fi
+done
+[ -n "${added:-}" ] && echo "Set up: in new terminals you can just type agy-agent-coders"
+export PATH="$HOME/.local/bin:$PATH"  # where agy installs itself
+
+if ! command -v agy >/dev/null; then
+  echo "Installing the Antigravity CLI (one time, about a minute)..."
+  # --compressed: the server sends install.sh gzipped even when not asked to.
+  curl -fsSL --compressed https://antigravity.google/cli/install.sh | bash >/dev/null 2>&1 || true
+  command -v agy >/dev/null || { echo "Could not install agy. Try again, or ask the organizer."; exit 1; }
+fi
+
+# --- add the team's rules and the guard to this person's agy settings ---------------
+# Commands are matched by whole words from the start: `gh pr view` allows
+# `gh pr view 12` but not `gh pr merge`. Each part of a chained command (a && b,
+# a | b) must match on its own. R, Rscript, quarto and python run any code they
+# are given; they are here because the work cannot be done without them.
+python3 - "$SELF" <<'PY'
+import json, os, sys, tempfile
+
+RULES = [
+    # look around
+    "ls", "cat", "head", "tail", "grep", "rg", "wc", "pwd", "which", "echo",
+    "diff", "file", "tree", "stat", "du", "free", "date",
+    # make folders and empty files (no copy, move or delete: those still ask)
+    "mkdir", "touch",
+    # R, Quarto and Python
+    "R", "Rscript", "quarto", "python3", "python",
+    # git (the guard blocks the destructive parts) and read-only GitHub
+    "git", "gh pr view", "gh pr list", "gh pr diff", "gh pr checks", "gh pr status",
+    "gh pr create", "gh issue view", "gh issue list", "gh issue create",
+    "gh repo view", "gh auth status",
+    # download
+    "curl",
+]
+self_path = sys.argv[1]
+home = os.path.expanduser("~")
+
+
+def load(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else None
+    except FileNotFoundError:
+        return {}
+    except Exception:
+        return None
+
+
+def save(path, data):  # write a temp file and swap it in, so a cut-off run can't truncate
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=".agent-coders-")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+    if os.path.exists(path) and not os.path.exists(path + ".before-agent-coders"):
+        os.link(path, path + ".before-agent-coders")  # one copy of what they had first
+    os.replace(tmp, path)
+
+
+notes = []
+
+path = os.path.join(home, ".gemini/antigravity-cli/settings.json")
+settings = load(path)
+if settings is None:
+    notes.append("could not read %s, so the team rules were not added" % path)
+else:
+    perms = settings.get("permissions")
+    if not isinstance(perms, dict):
+        perms = settings["permissions"] = {}
+    allow = perms.get("allow")
+    if not isinstance(allow, list):
+        allow = perms["allow"] = []
+    new = [r for r in ("command(%s)" % c for c in RULES) if r not in allow]
+    allow.extend(new)
+    mode = "defaultMode" not in settings
+    if mode:  # agy edits files in your project without asking
+        settings["defaultMode"] = "accept-edits"
+    if new or mode:
+        save(path, settings)
+    if new:
+        notes.append("added %d team rules to your agy settings" % len(new))
+
+path = os.path.join(home, ".gemini/config/hooks.json")
+guard = {"PreToolUse": [{"matcher": "run_command", "hooks": [
+    {"type": "command", "command": "'%s' --hook" % self_path, "timeout": 10}]}]}
+hooks = load(path)
+if os.path.islink(path):
+    notes.append("%s is a link to somewhere else, so the guard was not added there" % path)
+elif hooks is None:
+    notes.append("could not read %s, so the guard was not added" % path)
+elif hooks.get("agent-coders-guard") != guard:
+    hooks["agent-coders-guard"] = guard
+    save(path, hooks)
+    notes.append("added the agent-coders guard to your agy hooks")
+
+for n in notes:
+    print("agy-agent-coders: " + n)
+PY
+
+if [ "${1:-}" = "--check" ]; then
+  python3 -c '
+import json, os
+s = json.load(open(os.path.expanduser("~/.gemini/antigravity-cli/settings.json")))
+print("Runs without asking:", ", ".join(r[8:-1] for r in s["permissions"]["allow"] if r.startswith("command(")))
+print("Mode:", s.get("defaultMode"))'
+  exit 0
+fi
+
+exec agy "$@"

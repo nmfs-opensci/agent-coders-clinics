@@ -64,6 +64,14 @@ After changing `hub/claude-tester`, copy it to the shared folder:
 cp hub/claude-tester ~/shared-readwrite/agent-coders/
 ```
 
+`hub/agy-agent-coders` (the Antigravity CLI with the team's permissions) goes to
+the same place. People rerun nothing after you update it: it re-applies the team
+rules every time they start it.
+
+```bash
+cp hub/agy-agent-coders ~/shared-readwrite/agent-coders/
+```
+
 ## Watch use and cost
 
 ```bash

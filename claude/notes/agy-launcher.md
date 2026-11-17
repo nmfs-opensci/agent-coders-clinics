@@ -51,6 +51,14 @@ as a new hub user on 2026-10-03, Google sign-in included: works.
   `gh pr merge`, `gh issue close` and `gh api` are not on the team list, so agy's
   own prompt still follows. The `gh api` merge/close/branch-delete forms are left
   to that prompt rather than the guard.
+- **Dependency installs ask first (carried over 2026-11-17).** Installing a package
+  named on the command line (`pip`/`python -m pip`/`uv`/`conda`/`mamba`/`npm`) is
+  an "ask first", so a made-up or look-alike package name is checked before it is
+  installed. Installs from the project's own files (`-r requirements.txt`, `-e .`,
+  `conda env create -f`, bare `npm install`) and of `pip`/`setuptools`/`wheel` go
+  through. `pip` is not on the team list, so a bare `pip install` already prompted;
+  the guard matters because `python3` is, which let `python3 -m pip install foo` run
+  unasked. Tested with sample commands in agy's hook format, not in a live session.
 
 ## Open
 

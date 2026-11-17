@@ -8,8 +8,9 @@
 # the team's list of everyday commands to your agy settings so they run without
 # asking, and a guard that blocks destructive ones (git reset --hard, force
 # push, git clean -f, rm -r outside your project folder, pushing to main,
-# deleting a repository). Merging a PR, deleting a branch, closing an issue and
-# opening a PR in someone else's repo make the agent stop and ask you first.
+# deleting a repository). Merging a PR, deleting a branch, closing an issue,
+# opening a PR in someone else's repo, and installing a package that is not in the
+# project's dependency files make the agent stop and ask you first.
 # Anything else not on the list still asks you first. It installs agy if you don't have it; the first start asks you
 # to sign in with your Google account.
 #
@@ -164,6 +165,41 @@ def check_gh(words, seg, cwd):
         if ref and method in ("PATCH", "POST", "PUT", "DELETE") and ref.group(1) in protected(cwd):
             no_main(ref.group(1))
 
+# Installing a package named on the command line (pip install foo) asks first: that is
+# where a made-up or look-alike name gets in. Installs from the repo files
+# (-r requirements.txt, -e ., conda env create -f, a bare npm install) go through,
+# because those files are reviewed in pull requests.
+TOOLING = {"pip", "setuptools", "wheel", "uv", "python", "conda", "mamba"}
+VALUE_OPTS = {"-r", "--requirement", "-c", "--constraint", "-e", "--editable", "-t",
+              "--target", "-i", "--index-url", "--extra-index-url", "-f", "--find-links",
+              "--prefix", "--root", "--python", "-p", "-n", "--name", "--channel", "--file",
+              "--group", "--optional", "--extra", "--index", "-w", "--workspace", "--registry"}
+
+def installs(words):
+    prog, w = os.path.basename(words[0]), words[1:]
+    if re.fullmatch(r"python[\d.]*", prog) and w[:2] == ["-m", "pip"]:
+        prog, w = "pip", w[2:]
+    if prog == "uv" and w[:1] == ["pip"]:
+        prog, w = "pip", w[1:]
+    ok = (re.fullmatch(r"pip[\d.]*", prog) and w[:1] == ["install"]
+          or prog in ("conda", "mamba", "micromamba") and w[:1] in (["install"], ["create"])
+          or prog in ("uv", "pixi", "poetry") and w[:1] == ["add"]
+          or prog in ("npm", "pnpm", "yarn") and w[:1] in (["install"], ["i"], ["add"]))
+    if not ok:
+        return []
+    names, k = [], 1
+    while k < len(w):
+        a = w[k]
+        k += 2 if a in VALUE_OPTS else 1
+        if a in VALUE_OPTS or a.startswith("-"):
+            continue
+        if "://" not in a and (a.startswith((".", "/", "~")) or os.sep in a
+                               or a.endswith((".whl", ".tar.gz", ".zip"))):
+            continue  # a local folder or file: the project code itself
+        if re.split(r"[\[<>=!~;@ ]", a, maxsplit=1)[0].lower() not in TOOLING:
+            names.append(a)
+    return names
+
 try:
     data = json.load(sys.stdin)
 except Exception:
@@ -205,6 +241,13 @@ for seg in re.split(r"[;&|\n]+", command):
         check_git(words, base)
     elif prog == "gh":
         check_gh(words, seg, base)
+    named = installs(words) if words else []
+    if named:
+        asks.append("This installs packages that are not in the project dependency files: "
+                    + ", ".join(named) + ". First check that each one exists under that exact "
+                    "name on PyPI, conda-forge or npm, with a maintainer and release history "
+                    "that fit, and tell the user what it is and why it is needed. If it stays, "
+                    "add it to the dependency file and mention it in the pull request.")
     if prog != "rm":
         continue
     flags = [w for w in words[1:] if w.startswith("-")]
